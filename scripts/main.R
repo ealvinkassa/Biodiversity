@@ -2,6 +2,7 @@
 
 library(openxlsx)
 library(lubridate)
+library(dplyr)
 
 source("scripts/wrangling/functions.R")
 
@@ -42,9 +43,47 @@ data_especes$`Heure.d'observation` <- hms(
                                         ":00")
 )
 
-#Analysis ----
+#Explore ----
+
+#Nous souhaitons évaluer l'impact de l'activité humaine sur la présence des
+#espèces de céphalophes autour de cinq villages.
+
+#Ce que nous avons comme information :
+
+#  * L'étude observe le comportement de 06 espèces de céphalophes
+#  * L'étude porte sur 05 villages (Lolam, Mapi, Gonou, Sekom, Molako)
+#  * Dans chaque village, n stations d'observations sont installées
+#  * Caractéristiques du site d'observation (pente, MODIS Degradation)
+#  * Proximité avec les besoins vitaux des animaux (MODIS Degradation, Distance eau)
+#  * Proximité avec l'activité humaine (Distance village, route, eau, camp de chasse, MODIS Degradation)
+
+#  * Les revelés de présence des espèces, ainsi que leur moment d'échantillonage
+#  * Le nombre total de jours d'échantillonnage
 
 
+#Graphes ----
+
+#Connaitre le nombre de stations d'échantillonnage par villages
+
+table(data_stations$Villages)
+total_stations <- data_stations %>%
+  distinct(Villages, Stations.globales) %>%
+  count(Villages, name = "Station_Globales")
+
+
+#Connaitre le nombre de stations d'échantillonnage par villages
+#pour lesquels il y a eu observation de cephalophes
+
+cephalophes_stations <- data_especes %>%
+  distinct(Villages, `Stations.d'échantillonnage`) %>%
+  count(Villages, name = "Station_Cephalophes")
+
+
+#Connaitre le nombre d'espèces de céphalophes observées par type
+
+total_cephalophes <- data_especes %>%
+  distinct(Villages, Stations.globales) %>%
+  count(Villages, name = "Station_Globales")
 
 
 
