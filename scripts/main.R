@@ -30,6 +30,9 @@ data_stations <- read.xlsx("data/raw/Data_Biodiversity.xlsx",
                            sep.names = ".",
                            na.strings = "NA")
 
+
+
+
 #Traitement pour exploiter efficacement la colone data_espece$Heure.d'observation
 #1. Vérifier le type de la variable
 #2. Remplacer la valeur manquante par celle qui est correcte dans le dataset
@@ -61,7 +64,6 @@ data_especes$`Heure.d'observation` <- hms(
 #  * Le nombre total de jours d'échantillonnage
 
 
-#Graphes ----
 
 #Connaitre le nombre de stations d'échantillonnage par villages
 
@@ -79,11 +81,41 @@ cephalophes_stations <- data_especes %>%
   count(Villages, name = "Station_Cephalophes")
 
 
-#Connaitre le nombre d'espèces de céphalophes observées par type
+#Connaitre le nombre d'espèces de céphalophes observées par type d'espèce
 
-total_cephalophes <- data_especes %>%
-  distinct(Villages, Stations.globales) %>%
-  count(Villages, name = "Station_Globales")
+cephalophes_apparitions <- data_especes %>%
+  select(Espèces) %>%
+  count(Espèces, name = "Nombre_observations")
+
+
+#Connaitre le nombre d'espèces de céphalophes observées par type d'espèce
+#par village
+
+cephalophes_villages <- data_especes %>%
+  group_by(Villages, Espèces) %>%
+  summarise(Nombre_observations = n(), .groups = "drop")
+
+
+#Connaitre le nombre d'espèces de céphalophes observées par type d'espèce
+#par MODIS Degradation
+
+# Joindre les données des deux feuilles par le nom de station
+# "Stations d'échantillonnage" dans data_especes correspond à "Stations globales" dans data_stations
+
+joint_data <- data_especes %>%
+  left_join(data_stations, by = c("Stations.d'échantillonnage" = "Stations.globales"))
+
+# Compter le nombre d'espèces distinctes par niveau de MODIS dégradation
+
+cephalophes_modis <- joint_data %>%
+  group_by(`MODIS.Degradation`, Espèces) %>%
+  summarise(Nombre_observations = n(), .groups = "drop")
+
+
+#Graphes ----
+
+
+summary(data_especes)
 
 
 
