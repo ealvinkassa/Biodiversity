@@ -12,3 +12,9 @@ make_duration <- function(hhmm_string) {
     class = "hhmm_duration"
   )
 }
+
+pattern <- function(x) {
+  letter <- str_match(x, "([A-Z])")[,2]
+  number <- str_match(x, "([A-Z])([0-9]{1,2})")[,3]
+  sprintf("%02d%s", as.numeric(number), letter)
+}
