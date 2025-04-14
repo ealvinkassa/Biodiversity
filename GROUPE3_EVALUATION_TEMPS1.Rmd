@@ -9,22 +9,213 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+library(dplyr)
+library(openxlsx)
+library(tidyverse)
+library(reshape2)
+library(ggplot2)   
+library(corrplot)
+library(knitr)
+library(kableExtra)
+library(car)  
+library(lmtest)  
+library(ggplot2)
+library(lubridate)
+library(hms)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+data_stations <- read.xlsx("data/raw/Data_Biodiversity.xlsx",
+                          sheet = "data_stations",
+                          startRow = 1,
+                          colNames = TRUE,
+                          rowNames = FALSE,
+                          detectDates = TRUE,
+                          skipEmptyRows = TRUE,
+                          skipEmptyCols = TRUE,
+                          rows = NULL,
+                          cols = NULL,
+                          check.names = FALSE,
+                          sep.names = "_",
+                          namedRegion = NULL,
+                          na.strings = "NA",
+                          fillMergedCells = FALSE
+)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+data_especes <- read.xlsx("data/raw/Data_Biodiversity.xlsx",
+                          sheet = "data_especes",
+                          startRow = 1,
+                          colNames = TRUE,
+                          rowNames = FALSE,
+                          detectDates = TRUE,
+                          skipEmptyRows = TRUE,
+                          skipEmptyCols = TRUE,
+                          rows = NULL,
+                          cols = NULL,
+                          check.names = FALSE,
+                          sep.names = "_",
+                          namedRegion = NULL,
+                          na.strings = "NA",
+                          fillMergedCells = FALSE
+)
+```
+
+```{r}
+names(data_especes) <- gsub("'", "", names(data_especes))
+names(data_especes) <- gsub("é", "e", names(data_especes))
+names(data_especes) <- gsub("è", "e", names(data_especes))
+names(data_stations) <- gsub("'", "", names(data_stations))
+names(data_stations) <- gsub("é", "e", names(data_stations))
+names(data_stations) <- gsub("è", "e", names(data_stations))
+```
+
+
+```{r}
+str(data_especes)
+```
+```{r}
+str(data_stations)
+```
+# Fusionner les deux jeux de données
+```{r}
+data_biodiversity <- data_especes %>%
+  left_join(data_stations, 
+            by = c("Stations_dechantillonnage" = "Stations_globales"))
+
+```
+
+# Tailles du territoire de l'étude
+```{r}
+territoires <- data.frame(
+  Villages = c("Gonou", "Lolam", "Molako", "Mapi", "Sekom"),
+  Superficie_km2 = c(282.7, 690, 10.4, 586, 164)
+)
+```
+
+# Créer une nouvelle colonne Heure_uniforme
+```{r}
+data_biodiversity <- data_biodiversity %>%
+  mutate(
+    `Heure_dobservation` = case_when(
+      grepl(":", `Heure_dobservation`) ~ parse_time(`Heure_d'observation`, format = "%H:%M"),
+      TRUE ~ as_hms(as.numeric(`Heure_d'observation`) * 24 * 3600)
+    )
+  )
+
+```
+
+```{r}
+str(data_biodiversity)
+```
+# Répartition des espèces par village
+```{r}
+data_especes %>% ggplot(aes(x = Villages, fill = Especes)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Répartition des espèces par village", x = "Village", y = "Nombre d'observations")
+```
+# Comptage du nombre d'espèces par village
+
+```{r}
+
+espèces_par_village <- data_especes %>%
+  group_by(Villages, Espèces) %>%
+  summarise(Nombre = n(), .groups = "drop") %>%  # Utilisation de .groups = "drop" pour éviter les regroupements résiduels
+  arrange(Villages, desc(Nombre))  # Tri par village et nombre d'observations
+
+# Affichage du tableau
+print(espèces_par_village)
+
+```
+```{r}
+# Graphique à barres par village pour afficher les effectifs des espèces
+ggplot(espèces_par_village, aes(x = Villages, y = Nombre, fill = Espèces)) +
+  geom_bar(stat = "identity", position = "dodge") +  # position "dodge" pour avoir des barres côte à côte
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotation des étiquettes sur l'axe X pour les rendre lisibles
+  labs(title = "Effectifs des espèces par village", x = "Village", y = "Nombre d'observations") +
+  scale_fill_brewer(palette = "Set3")  # Choix d'une palette de couleurs agréable pour les espèces
+
+```
+
+
+```{r}
+# Transformation en tableau avec espèces en ligne et villages en colonne
+tableau_effet <- espèces_par_village %>%
+  pivot_wider(names_from = Villages, values_from = Nombre, values_fill = list(Nombre = 0))  
+
+# Affichage du tableau
+print(tableau_effet)
+```
+```{r}
+# Charger les bibliothèques nécessaires
+library(dplyr)
+library(lubridate)
+
+# Convertir l'heure d'observation en format horaire
+data_especes <- data_especes %>%
+  mutate(
+    `Heure_d'observation` = case_when(
+      grepl(":", `Heure_d'observation`) ~ parse_time(`Heure_d'observation`, format = "%H:%M"),
+      TRUE ~ as_hms(as.numeric(`Heure_d'observation`) * 24 * 3600)
+    )
+  )
+
+# Définir les tranches horaires
+data_especes <- data_especes %>%
+  mutate(
+    Tranche_horaire = case_when(
+      hour(`Heure_d'observation`) >= 0 & hour(`Heure_d'observation`) < 6 ~ "0h - 6h",
+      hour(`Heure_d'observation`) >= 6 & hour(`Heure_d'observation`) < 12 ~ "6h - 12h",
+      hour(`Heure_d'observation`) >= 12 & hour(`Heure_d'observation`) < 18 ~ "12h - 18h",
+      hour(`Heure_d'observation`) >= 18 & hour(`Heure_d'observation`) < 24 ~ "18h - 24h"
+    )
+  )
+
+# Vérifier les résultats
+head(data_especes)
+
+
+```
+
+
+```{r}
+# Créer le tableau de répartition des espèces par tranche horaire
+table_repartition <- data_especes %>%
+  group_by(Tranche_horaire, Espèces) %>%
+  summarise(Nombre_observations = n()) %>%
+  spread(key = Espèces, value = Nombre_observations, fill = 0)
+
+# Afficher le tableau
+print(table_repartition)
+
+```
+Cartographie de la richesse spécifique
+
+
+
+```{r}
+# Richesse spécifique par station (nombre d'espèces uniques observées)
+richesse_station <- data_especes %>%
+  group_by(Stations_dechantillonnage) %>%
+  summarise(Richesse = n_distinct(Especes))
+```
+
+
+```{r}
+# Jointure avec les pressions
+stations_richesse <- data_stations %>%
+  rename(Stations_dechantillonnage = Stations_globales) %>%
+  left_join(richesse_station, by = "Stations_dechantillonnage")
+
+# En l’absence de coordonnées géographiques, on fait un barplot
+library(ggplot2)
+ggplot(stations_richesse, aes(x = reorder(Stations_dechantillonnage, -Richesse), y = Richesse)) +
+  geom_bar(stat = "identity", fill = "darkgreen") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Richesse spécifique par station", x = "Station", y = "Nombre d'espèces uniques")
+
+```
+
