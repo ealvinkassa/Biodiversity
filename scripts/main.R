@@ -30,7 +30,7 @@ data_especes <- read.xlsx("data/raw/Data_Biodiversity.xlsx",
 
 #Traitement pour exploiter efficacement la colone data_espece$Heure_d'observation
 #a. Remplacer la valeur manquante par celle qui est correcte dans le dataset
-#b. Transformer la variable en datetime
+#b. Transformer la variable en datetime au format HH MM SS.
 
 data_especes$`Heure_d'observation`[1] <- c("12:38")
 data_especes$`Heure_d'observation` <- hms(
@@ -50,6 +50,7 @@ data_stations <- read.xlsx("data/raw/Data_Biodiversity.xlsx",
                            na.strings = "NA")
 
 #Corriger l'erreur au niveau du nom des stations. Transformer à MolakoA20 en Molako20A
+#pour éviter la formation de données manquantes lors de la jointure à venir.
 
 data_stations <- data_stations %>%
   mutate(Numero_de_la_station = str_replace(Numero_de_la_station, "([A-Z])([0-9]{1,2})", pattern(Numero_de_la_station)),
@@ -284,6 +285,8 @@ geographie <- geographie %>%
   
 #III - Activité humaine (distances de l'homme par rapport à l'abondance
 #des cephalophes)
+
+
 
 
 #H1. La présence humaine à un impact significatif sur l'abondance des céphalophes dans une zone donnée.
