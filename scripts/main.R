@@ -1,19 +1,18 @@
 #Setup ----
 
-install.packages("carData")
-install.packages("factoextra")
+# Vérifier si les packages sont installés
+required_packages <- c("carData", "factoextra", "lme4", "Matrix", 
+                       "readxl", "openxlsx", "lubridate", "dplyr", 
+                       "stringr", "ggplot2")
 
-library(readxl)
-library(openxlsx)
-library(lubridate)
-library(dplyr)
-library(stringr)
-library(ggplot2)
-library(car)
-library(factoextra)
+new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
 
+# Charger les bibliothèques
+lapply(required_packages, library, character.only = TRUE)
 
 source("scripts/wrangling/functions.R")
+
 
 #Data ----
 
@@ -55,7 +54,7 @@ data_stations <- read.xlsx("data/raw/Data_Biodiversity.xlsx",
 
 data_stations <- data_stations %>%
   mutate(
-    Numero_de_la_station = str_replace(Numero_de_la_station, "([A-Z])([0-9]{1,2})", pattern(Numero_de_la_station)),
+    Numero_de_la_station = str_replace(Numero_de_la_station, "([A-Z])([0-9]{1,2})", "\\1\\2"),
     Stations_globales = str_replace(Stations_globales, "([A-Za-z]+)([A-Z])([0-9]+)", "\\1\\3\\2")
   )
 
@@ -386,9 +385,6 @@ geographie <- geographie %>%
   )
 
 
-#0. Graphe résumé de l'évolution des apparitions selon la géographie
-
-
   
 #III - Activité humaine (distances de l'homme par rapport à l'abondance
 #des cephalophes)
@@ -401,7 +397,7 @@ geographie <- geographie %>%
 
 #Préparer les données pour analyse et interprétation
 
-dat <- total_cephalophes_par_station %>%
+dath1 <- total_cephalophes_par_station %>%
   left_join(
     data_stations %>%
       select(-Villages,
@@ -410,17 +406,27 @@ dat <- total_cephalophes_par_station %>%
     by = c("Stations_d'échantillonnage" = "Stations_globales"))
 
 
+dath2 <- total_cephalophes_par_type_station %>%
+  left_join(
+    data_stations %>%
+      select(-Villages,
+             -Numero_de_la_station
+      ),
+    by = c("Stations_d'échantillonnage" = "Stations_globales"))
+
+
+
 #Test arbritraire pour expliquer à travers une régression linéaire
 #le nombre total de cephalophes.
 
 
-firm <- lm(Nombre_total_cephalophes ~ Distance_Village + Distance_Route + Distance_eau + Distance_camp_de_chasse + MODIS_Degradation, data = dat)
+firm <- lm(Nombre_total_cephalophes ~ Distance_Village + Distance_Route + Distance_eau + Distance_camp_de_chasse + MODIS_Degradation, data = dath1)
 summary(firm) #20 % de variance expliquée
 
-secm <- lm(log(Nombre_total_cephalophes + 1) ~ log(Distance_Route + 1), data = dat)
+secm <- lm(log(Nombre_total_cephalophes + 1) ~ log(Distance_Route + 1), data = dath1)
 summary(secm)
 
-thim <- lm(Nombre_total_cephalophes ~ Pente + MODIS_Degradation, data = dat)
+thim <- lm(Nombre_total_cephalophes ~ Pente + MODIS_Degradation, data = dath1)
 summary(thim) #29 % de la variance expliquée
 
 
@@ -452,18 +458,91 @@ vif(thim) # VIF entre 1,01 et 1,25 : aucune inquiétude de multicolinéarité.
 
 
 
-#Hypothèses globales que nous souhaitons vérifier
+#Hypothèses globales que nous souhaitons vérifier ----
 
 
-#H1. Plus la pression anthropique est forte, moins les céphalophes sont détectés,
-#en fréquence et en abondance.
+#H1 . Plus la pression anthropique est forte, moins on rencontre les céphalophes.
 #Objectif : Mesurer l'effet global de l'anthropisation
 
+forglm <- glm(Nombre_total_cephalophes ~ pression_humaine_globale, family = poisson, data = dath1)
+summary(forglm)
+
+#H1 . Vailde et significatif
+#La pression humaine globale a un effet significatif (p = 0.0489) sur le nombre total de céphalophes,
+#avec un effet négatif : lorsque la pression humaine augmente d'une unité, le nombre de céphalophes diminue de 30%.
 
 
 
 
+#H2 . Certaines espèces de céphalophes sont plus tolérantes à la présence humaine que d'autres (espèces "adaptatives" vs "sensibles")
+#Objectif : Mesurer la sensibilité à l'homme selon les espèces
+
+sixlmer <- lmer(Nombre_observations ~ pression_humaine_globale + (1|Espèces), data = dath2)
+summary(sixlmer)
 
 
+#Rejeté, non significatif
+
+#Le t value pour la pression humaine est -1.41, ce qui suggère une tendance à la baisse, mais pas statistiquement significative au seuil classique (généralement t > 2 ou p < 0.05 pour significativité)
+#La pression humaine globale a donc un effet non significatif (t < 2) sur le nombre total de céphalophes,
+#avec un effet négatif : lorsque la pression humaine augmente d'une unité, le nombre de céphalophes diminue de 30%.
+
+
+
+
+#H3 . L’effet de la pression humaine est modulé par les caractéristiques naturelles du territoire
+#(relief, végétation, accessibilité aux ressources).
+#Objectif : Mesurer les interactions entre variables naturelles et humaines
+
+sepglm <- glm(Nombre_total_cephalophes ~ gradiant_ecologique, family = poisson, data = dath1)
+summary(sepglm)
+
+huiglm <- glm(Nombre_total_cephalophes ~ pression_humaine_globale * MODIS_Degradation, family = poisson, data = dath1)
+summary(huiglm)
+
+neuglm <- glm(Nombre_total_cephalophes ~ pression_humaine_globale * Pente, family = poisson, data = dath1)
+summary(neuglm)
+
+
+
+#Hypothèses Spéficiques ----
+
+
+#H4 . Les zones à forte pente sont moins fréquentées par l’homme et donc plus favorables à la présence des céphalophes.
+#Objectif : Effets de la pente sur la présence de cephalophes
+
+dixglm <- glm(Nombre_total_cephalophes ~ Pente, family = poisson, data = dath1)
+summary(dixglm)
+
+#Valide.
+
+#Le coefficient de la pente est négatif et hautement significatif : une augmentation d'une unité de pente entraîne une
+#baisse de ~ 5.2 % du nombre attendu de céphalophes.
+
+
+#H5 . Proximité des points d'eau
+#Les céphalophes sont plus souvent observés à proximité des sources d’eau, nécessaires à leur survie.
+
+onzglm <- glm(Nombre_total_cephalophes ~ Distance_eau, family = poisson, data = dath1)
+summary(onzglm)
+
+
+#H6 . Proximité des routes ou chemins
+#Les zones proches des routes sont moins fréquentées par les céphalophes en raison du dérangement humain.
+
+douglm <- glm(Nombre_total_cephalophes ~ Proximite_route, family = poisson, data = dath1)
+summary(douglm)
+
+#Valide. Une proximité à la route réduit drastiquement l’abondance attendue de céphalophes. C’est un indicateur fort de l’impact de
+#l’infrastructure humaine sur leur distribution.
+
+
+
+#H7 . Les effets sont variables d'un village à l'autre
+
+trelmer <- lmer(Nombre_total_cephalophes ~ pression_humaine_globale + gradiant_ecologique + (1|Villages), data = dath1)
+summary(trelmer)
+
+#Rejeté. Il exite bien des différences, mais elles sont statistiquement non significatives.
 
 
