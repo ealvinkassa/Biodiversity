@@ -1,7 +1,7 @@
 #Setup ----
 
 install.packages("carData")
-
+install.packages("factoextra")
 
 library(readxl)
 library(openxlsx)
@@ -10,6 +10,7 @@ library(dplyr)
 library(stringr)
 library(ggplot2)
 library(car)
+library(factoextra)
 
 
 source("scripts/wrangling/functions.R")
@@ -53,8 +54,115 @@ data_stations <- read.xlsx("data/raw/Data_Biodiversity.xlsx",
 #pour éviter la formation de données manquantes lors de la jointure à venir.
 
 data_stations <- data_stations %>%
-  mutate(Numero_de_la_station = str_replace(Numero_de_la_station, "([A-Z])([0-9]{1,2})", pattern(Numero_de_la_station)),
-         Stations_globales = str_replace(Stations_globales, "([A-Za-z]+)([A-Z])([0-9]+)", "\\1\\3\\2"))
+  mutate(
+    Numero_de_la_station = str_replace(Numero_de_la_station, "([A-Z])([0-9]{1,2})", pattern(Numero_de_la_station)),
+    Stations_globales = str_replace(Stations_globales, "([A-Za-z]+)([A-Z])([0-9]+)", "\\1\\3\\2")
+  )
+
+
+#A - Créer un score de pression anthropique, pour mesurer l'intensité de la pression anthropique.
+#Cette pression diminue quand la distance augmente.
+
+
+#Etape 1 . Inverser les distances en proximité
+
+data_stations <- data_stations %>%
+  mutate(
+    Proximite_village = 1/(Distance_Village + 1), # +1 pour éviter la division par zéro
+    Proximite_route = 1/(Distance_Route + 1),
+    Proximite_eau = 1/(Distance_eau + 1),
+    Proximite_camp_de_chasse = 1/(Distance_camp_de_chasse + 1)
+  )
+
+#Etape 2 . Standardiser les variables
+
+arc <- scale(
+  data_stations[, c(
+    "Proximite_village",
+    "Proximite_route",
+    "Proximite_eau",
+    "Proximite_camp_de_chasse"
+  )])                                                                                        
+
+#Etape 3 . Créer la variable composite
+
+acp_arc <- prcomp(arc, center = TRUE, scale. = TRUE)
+summary(acp_arc) #Les 3 premières composantes résument 86,9 % de la variance totale
+
+
+#Etape 4 . Créer la variable synthétique
+
+# Récupérer les scores des 3 premières variables composantes de l'acp
+
+scores_arc <- acp_arc$x[, 1:3]
+
+# Afficher les coefficients (loadings) de l'acp, pour comprendre la contribution
+#de chaque variable corresponsante
+
+loadings_arc <- acp_arc$rotation
+round(loadings_arc[, 1:3], 3)  # Pour PC1 à PC3
+
+
+#Ajouter les 03 variables au jeu de données
+#En faisant cela, je crée non pas une seule, mais trois variables composites d'importance
+#variées, sur base de la proximité des points évoqués par rapport aux stations
+
+
+data_stations <- cbind(
+  data_stations,
+  pression_humaine_globale = scores_arc[, 1],
+  gradient_route_eau = scores_arc[, 2],
+  accessibilite_chasse_traditionnelle = scores_arc[, 3]
+)
+
+
+
+#B - Créer un score de pression environnementale globale, pour mesurer l'intensité de la pression anthropique
+#et des autres variables environnementale (Pente, MODIS_Degradation).
+
+
+#Etape 1 . Standardiser les variables
+
+envir <- scale(
+  data_stations[, c(
+    "Proximite_village",
+    "Proximite_route",
+    "Proximite_eau",
+    "Proximite_camp_de_chasse",
+    "MODIS_Degradation",
+    "Pente"
+  )])
+
+
+#Etape 2 . Créer la variable composite pour les variables environnementales
+
+acp_envir <- prcomp(envir, center = TRUE, scale. = TRUE)
+summary(acp_envir) #Les 4 premières composantes résument 77.51% de la variance totale
+
+#Etape 3 . Créer la variable synthétique
+
+# Récupérer les scores des 3 premières variables composantes de l'acp
+
+scores_envir <- acp_envir$x[, 1:4]
+
+# Afficher les coefficients (loadings) de l'acp
+loadings_envir <- acp_envir$rotation
+round(loadings_envir[, 1:4], 4)  # Pour PC1 à PC4, 77.51% 
+
+#Ajouter les 3 variables au jeu de données
+#En faisant cela, je crée non pas une seule, mais trois variables composites d'importance
+#variées, sur base de la proximité des points évoqués par rapport aux stations
+
+
+data_stations <- cbind(
+  data_stations,
+  pression_environnementale_globale = scores_envir[, 1],
+  gradiant_ecologique = scores_envir[, 2],
+  contraste_zone_accessible_degradee = scores_envir[, 3],
+  accessibilite_point_eau = scores_envir[, 4]
+)
+
+
 
 
 #3. autres_infos récupère dans la feuille 4, les données sur les espèces
@@ -73,7 +181,6 @@ autres_infos <- read.xlsx("data/raw/Data_Biodiversity.xlsx",
 #a. Extraire les espèces de cephalophes
 
 cephalophes <- autres_infos$Espèces
-
 
 #4. geographie récupère dans la feuille 4, les données sur la superficie
 #des villages étudiés
@@ -287,45 +394,74 @@ geographie <- geographie %>%
 #des cephalophes)
 
 
+#Problématique centrale : Comment la pression anthropique influence-t-elle la présence
+#et l'abondance des différentes espèces de céphalophes dans les villages du bassin du Congo,
+#en interaction avec les caractéristiques écologiques naturelles de leur environnement ?
 
 
-#H1. La présence humaine à un impact significatif sur l'abondance des céphalophes dans une zone donnée.
-#Cela veut dire que plus une station d'échantillonnage est proche d'une route, moins on observe des céphalophes.
+#Préparer les données pour analyse et interprétation
 
-
-#Préparer les données pour interprétation
-
-dt <- total_cephalophes_par_station %>%
+dat <- total_cephalophes_par_station %>%
   left_join(
     data_stations %>%
       select(-Villages,
              -Numero_de_la_station
-             ),
-  by = c("Stations_d'échantillonnage" = "Stations_globales"))
+      ),
+    by = c("Stations_d'échantillonnage" = "Stations_globales"))
 
 
-#Vérifier à travers une régression linéaire
+#Test arbritraire pour expliquer à travers une régression linéaire
+#le nombre total de cephalophes.
 
-first <- lm(Nombre_total_cephalophes ~ Pente + Distance_Village + Distance_Route + Distance_eau + Distance_camp_de_chasse, data = dt)
-summary(first) #20 % de variance expliquée
 
-second <- lm(log(Nombre_total_cephalophes + 1) ~ log(Distance_Route + 1), data = dt)
-summary(second)
+firm <- lm(Nombre_total_cephalophes ~ Distance_Village + Distance_Route + Distance_eau + Distance_camp_de_chasse + MODIS_Degradation, data = dat)
+summary(firm) #20 % de variance expliquée
 
-third <- lm(Nombre_cephalophes ~ Moment_journee, data = total_cephalophes_par_village_moment_journee)
-summary(third) #29 % de la variance expliquée
+secm <- lm(log(Nombre_total_cephalophes + 1) ~ log(Distance_Route + 1), data = dat)
+summary(secm)
+
+thim <- lm(Nombre_total_cephalophes ~ Pente + MODIS_Degradation, data = dat)
+summary(thim) #29 % de la variance expliquée
 
 
 #Etudier les colinéarités avec le vif test (variance influence factor)
 
-vif(first) # VIF entre 1,01 et 1,25 : aucune inquiétude de multicolinéarité.
- 
-
-#Conclusion
-#Seule la variable Distance_Route est significative à un niveau de 0.001.
+vif(firm) # VIF entre 1,01 et 1,25 : aucune inquiétude de multicolinéarité.
+vif(thim) # VIF entre 1,01 et 1,25 : aucune inquiétude de multicolinéarité.
 
 
-#Graphes ----
+
+#Nous avons plus haut, créer deux groupes de variables composites.
+
+#Groupe A - 3 variables composites, qui chacune représente une facette
+#d'interprétation de la pression anthropique.
+
+#Utiliser PC1 (pression_humaine_globale) - Pression humaine globale (proximité des villages et des camps de chasse)
+#Utiliser PC2 (gradient_route_eau) - Gradiant route vs eau (proximité aux routes et aux points d'eau)
+#Utiliser PC3 (accessibilite_chasse_traditionnelle) - Accessibilité (proximité route, camp_de_chasse, eau)
+
+
+#Groupe B - 4 variables composites, qui chacune représente une facette
+#d'interprétation de la pression environnementale.
+
+#Utiliser PC1 (pression_environnementale_globale) - Pression environnementale globale (proximité des villages et des camps de chasse)
+#Utiliser PC2 (gradiant_ecologique) - Gradiant écologique (Proximité eau, Pente, MODIS_Degradation)
+#Utiliser PC3 (contraste_zone_accessible_degradee) - Accessibilité de la zone (Proximité route, Pente, MODIS_Degradation)
+#Utiliser PC4 (accessibilite_point_eau) - Accessibilité (Route, eau, pente)
+
+
+
+
+#Hypothèses globales que nous souhaitons vérifier
+
+
+#H1. Plus la pression anthropique est forte, moins les céphalophes sont détectés,
+#en fréquence et en abondance.
+#Objectif : Mesurer l'effet global de l'anthropisation
+
+
+
+
 
 
 
