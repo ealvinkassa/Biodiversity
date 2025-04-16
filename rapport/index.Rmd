@@ -1,8 +1,8 @@
 --- 
-title: "A Minimal Book Example"
-author: "John Doe"
+title: "Évaluation de l'abondance des céphalophes dans cinq villages du bassin du Congo"
+author: "Le 3, avec Cica TOSSOU, Thibaut TOSSOU, Estève Alvin KASSA"
 date: "`r Sys.Date()`"
-site: bookdown::bookdown_site
+output: bookdown::gitbook
 documentclass: book
 bibliography: [book.bib, packages.bib]
 # url: your book url like https://bookdown.org/yihui/bookdown
