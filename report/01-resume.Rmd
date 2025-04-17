@@ -1,6 +1,6 @@
 \newpage
 
-Ce document présente les résultats d'une étude sur la distribution des céphalophes dans cinq villages du bassin du Congo, réalisée dans le cadre d'une évaluation de compétences en analyse de données environnementales.
+Ce document présente les résultats d'une étude sur l'a'impact de l'activité humaine sur une population de céphalophes dans cinq villages du bassin du Congo. Elle est réalisée dans le cadre de l'évaluation formative du temps 1, de la certification en analyse de données massives du Groupe des Ecoles Centrales en partenariaat avec Sèmè City au Bénin.
 
 \newpage
 

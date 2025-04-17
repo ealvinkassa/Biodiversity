@@ -1,9 +1,6 @@
 # L'introduction
 
-Le bassin du Congo, deuxième plus grand massif forestier de la planète, représente un écosystème d'une importance capitale tant à l'échelle régionale que mondiale. Sa biodiversité exceptionnelle, essentielle à la régulation du climat et au maintien des services écosystémiques, est cependant soumise à une pression croissante due aux activités anthropiques. Parmi les groupes d'espèces particulièrement vulnérables, les céphalophes, antilopes forestières, font face à une surexploitation liée au braconnage et à la dégradation de leur habitat.
+Les céphalophes sont des petits bovidés forestiers discrets, mais essentiels au fonctionnement des écosystèmes tropicaux. Leur présence et leur abondance sont influencées par de nombreux facteurs environnementaux et anthropiques, souvent complexes à démêler. Dans un contexte de fragmentation croissante des habitats et de pressions humaines accrues, comprendre les préférences écologiques de ces espèces devient crucial pour orienter efficacement les efforts de conservation.
 
-Face à cette situation préoccupante, les gouvernements des pays du Bassin du Congo ont initié une étude pilote visant à acquérir des données précises et exploitables pour orienter efficacement les stratégies de conservation. Cette démarche s'inscrit dans un contexte plus large où l'analyse de données massives aide à comprendre les interactions complexes entre les activités humaines et les écosystèmes.
-
-Dans le cadre de cette évaluation, nous nous proposons d'appliquer les connaissances et les compétences acquises en analyse de données massives (Temps 1) pour examiner l'impact des pressions anthropiques sur l'abondance des céphalophes. Cette analyse permettra de fournir des éléments concrets aux décideurs pour la mise en place de mesures de gestion adaptées.
-
+Cette étude s’appuie sur des relevés de pièges photographiques menés dans une aire protégée de l’Afrique de l’Ouest. Elle vise à évaluer l’influence de variables environnementales telles que l’altitude, la couverture forestière et la proximité des activités humaines sur l’abondance de trois espèces de céphalophes : Cephalophus dorsalis, Cephalophus silvicultor et Philantomba maxwellii. En identifiant les préférences spécifiques de chaque espèce, l’étude apporte des éléments concrets pour mieux planifier la gestion des habitats forestiers.
 

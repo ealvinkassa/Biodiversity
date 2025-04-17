@@ -1,9 +1,142 @@
 # Résultats de l’analyse exploratoire et statistique
 
-## Footnotes
+Pour analyser l'impact de l'activité humaine sur la biodiversité dans le bassin du Congo, nous nous sommes basés sur des observations de 6 espèces de céphalophes. L'étude s'est déroulée durant plusieurs mois, et couvre la période du **17 Avril au 29 Septembre 2014**.
 
-Footnotes are put inside the square brackets after a caret `^[]`. Like this one ^[This is a footnote.]. 
+
+## Géographie du territoire
+
+```{r Transformer_etape_5, echo=FALSE, include=FALSE}
+
+# Compiler toutes les données de géographie
+
+
+geographie <- geographie %>%
+  left_join(all_data %>%
+              group_by(Villages) %>%
+              summarise(
+                Pente_min = min(Pente, na.rm = TRUE),
+                Pente_max = max(Pente, na.rm = TRUE),
+                Pente_med = median(Pente, na.rm = TRUE),
+                Pente_mean = mean(Pente, na.rm = TRUE),
+                Amplitude = Pente_max - Pente_min,
+                Pente_sd = sd(Pente, na.rm = TRUE),
+                Pente_cv = Pente_sd / Pente_mean
+              ),
+             by = c("Site" = "Villages")) %>%
+  left_join(
+    stations,
+    by = c("Site" = "Villages")) %>%
+  left_join(
+    data_stations %>%
+      filter(MODIS_Degradation == 1 & Stations_globales %in% unique(data_especes$`Stations_d'échantillonnage`)) %>%
+      group_by(Villages) %>%
+      summarise(
+        Nb_Station_Forestiere_Cephalophes = n(),
+      ),
+    by = c("Site" = "Villages")) %>%
+ mutate(
+    Couverture_Foret_Globale = (Nb_Station_Forestiere/Nb_Station_Globales),
+    Couverture_Foret_Cephalophes = (Nb_Station_Forestiere_Cephalophes/Nb_Station_Cephalophes)
+  )
+
+print(geographie)
+
+#Etape 1 . Inverser les distances en proximité
+
+data_stations <- data_stations %>%
+  mutate(
+    Proximite_village = 1/(Distance_Village + 1), # +1 pour éviter la division par zéro
+    Proximite_route = 1/(Distance_Route + 1),
+    Proximite_eau = 1/(Distance_eau + 1),
+    Proximite_camp_de_chasse = 1/(Distance_camp_de_chasse + 1)
+  )
+
+#Etape 2 . Standardiser les variables
+
+arc <- scale(
+  data_stations[, c(
+    "Proximite_village",
+    "Proximite_route",
+    "Proximite_eau",
+    "Proximite_camp_de_chasse"
+  )])                                                                                        
+
+#Etape 3 . Créer la variable composite
+
+acp_arc <- prcomp(arc, center = TRUE, scale. = TRUE)
+summary(acp_arc) #Les 3 premières composantes résument 86,9 % de la variance totale
+
+
+#Etape 4 . Créer la variable synthétique
+
+# Récupérer les scores des 3 premières variables composantes de l'acp
+
+scores_arc <- acp_arc$x[, 1:3]
+
+# Afficher les coefficients (loadings) de l'acp, pour comprendre la contribution
+#de chaque variable corresponsante
+
+loadings_arc <- acp_arc$rotation
+round(loadings_arc[, 1:3], 3)  # Pour PC1 à PC3
+
+
+#Ajouter les 03 variables au jeu de données
+
+
+data_stations <- cbind(
+  data_stations,
+  pression_humaine_globale = scores_arc[, 1],
+  gradient_route_eau = scores_arc[, 2],
+  accessibilite_chasse_traditionnelle = scores_arc[, 3]
+)
+
+```
+
+
+- un score de pression environnementale, qui combine pression anthropique et facteurs environnementaux (pente, indice MODIS) ;
+
+
+```{r géographie, echo=TRUE, include=TRUE}
+
+#1. Le nombre de stations d'échantillonnage par villages
+
+total_stations_par_village <- data_stations %>%
+  distinct(Villages, Stations_globales) %>%
+  count(Villages, name = "Nb_Station_Globales")
+
+
+#2. Le nombre de stations d'échantillonnage par villages
+#pour lesquels il y a eu observation de cephalophes
+
+total_stations_cephalophes <- data_especes %>%
+  distinct(Villages, `Stations_d'échantillonnage`) %>%
+  count(Villages, name = "Nb_Station_Cephalophes")
+
+
+#3. Le nombre de stations où le MODIS_Degratation est de 1 (en forêt)
+
+total_stations_en_foret <- data_stations %>%
+  filter(MODIS_Degradation == 1) %>%
+  group_by(Villages) %>%
+  count(Villages, name = "Nb_Station_Forestiere")
+
+
+#4. Comparatif des stations de détection des cephalophes
+
+stations <- total_stations_par_village %>%
+  left_join(total_stations_en_foret,
+            by = c("Villages")) %>%
+  left_join(total_stations_cephalophes,
+            by = "Villages")
+
+
+```
+
+
+Le territoire sujet de l'étude est composé de cinq villages : Gonou,
+
+
 
 ## Citations
 
-Reference items in your bibliography file(s) using `@key`.
+

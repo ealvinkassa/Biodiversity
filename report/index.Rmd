@@ -1,14 +1,17 @@
 ---
-title: "Analyse de l'impact de la pression anthropique sur la biodiversité dans le bassin du Congo"
+title: Analyse de l'impact de la pression anthropique sur la biodiversité dans le
+  bassin du Congo
 author: "Cica TOSSOU, Thibaut TOSSOU, Estève Alvin KASSA"
 date: "`r Sys.Date()`"
-cover-image: "assets/cephalophe.png"
+output: pdf_document
 site: bookdown::bookdown_site
 documentclass: book
 lang: fr
-bibliography: [book.bib, packages.bib]
+bibliography:
+- book.bib
+- packages.bib
 biblio-style: apalike
-link-citations: yes
-description: "This is a minimal example of using
-  the bookdown package to write a book."
+link-citations: true
+description: This is a minimal example of using the bookdown package to write a book.
+cover-image: assets/cephalophe.png
 ---

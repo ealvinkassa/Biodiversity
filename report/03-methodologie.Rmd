@@ -1,12 +1,318 @@
 # Méthodologie de l'étude
 
-You can add parts to organize one or more book chapters together. Parts can be inserted at the top of an .Rmd file, before the first-level chapter heading in that same file. 
+(Ajouter ici une introduction de la section méthodologie)
 
-Add a numbered part: `# (PART) Act one {-}` (followed by `# A chapter`)
+## Données brutes mises à disposition
 
-Add an unnumbered part: `# (PART\*) Act one {-}` (followed by `# A chapter`)
+Pour cette étude, nous avons reçu un fichier excel nommé **Data_Biodiversity.xlsx**. Ce dernier agrège en 4 feuilles, les données quantitatives et qualitatives mises à notre disposition dans le cadre d cet étude :
 
-Add an appendix as a special kind of un-numbered part: `# (APPENDIX) Other stuff {-}` (followed by `# A chapter`). Chapters in an appendix are prepended with letters instead of numbers.
+-   data_espèces : nous y retrouvons, les détails concernant les différentes apparitions de céphalophes enrégistrées par les stations de collecte déployées sur les cinq villages ;
+-   data_stations : répertorie l'ensemble des installations de station sur le territoire. Cette feuille donne aussi, la nomenclature des noms des stations d'échantillonage, ainsi que des données importantes sur leur lieu d'implantation (relief, caractéristiques naturelles, distance aux routes, etc...)
+-   table_information : dictionnaire de données de la base **Data_Biodiversity.xlsx**
+-   autres_infos : s'y trouvent des informations importantes pour identifier les différentes espèces et la superficie des villages échantillonés.
+
+**Data_Biodiversity.xlsx** est propre, bien structuré, et ne contient pas de données manquantes au début de l'étude.
+
+## Préparation des données
+
+Nous avons commencé par explorer les librairies que nous pourrions utiliser dans le cadre de notre étude.
+
+```{r Packages, echo=FALSE, include=FALSE}
+
+# Vérifier si les packages sont installés
+required_packages <- c("carData", "factoextra", "lme4", "Matrix", 
+                       "readxl", "openxlsx", "lubridate", "dplyr", 
+                       "stringr", "ggplot2", "tidyr", "car")
+
+new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+# Charger les bibliothèques
+lapply(required_packages, library, character.only = TRUE)
+
+source("C:/Users/HP/OneDrive - gouvbj/MVDC/Cours/Projects/Biodiversity/scripts/wrangling/functions.R")
+
+```
+
+Nous avons ensuite extrait les informations importantes de la base de données, en utilisant le package openxlsx. C'est celui qui offrait la meilleure flexibilité dans le choix des cellules à extraire de la base fournie.
+
+```{r Importer, echo=FALSE, include=FALSE}
+#1. data_especes récupère les informations de la feuille 1
+
+data_especes <- read.xlsx(
+  "C:/Users/HP/OneDrive - gouvbj/MVDC/Cours/Projects/Biodiversity/data/raw/Data_Biodiversity.xlsx",
+  sheet = 1,
+  startRow = 1,
+  colNames = TRUE,
+  rowNames = FALSE,
+  detectDates = TRUE,
+  sep.names = "_",
+  na.strings = "NA"
+)
+
+#Apprécier le dataframe data_especes
+
+str(data_especes)
+
+#2. data_stations récupère les données de la feuille 2
+
+data_stations <- read.xlsx(
+  "C:/Users/HP/OneDrive - gouvbj/MVDC/Cours/Projects/Biodiversity/data/raw/Data_Biodiversity.xlsx",
+  sheet = 2,
+  startRow = 1,
+  colNames = TRUE,
+  rowNames = FALSE,
+  detectDates = TRUE,
+  sep.names = "_",
+  na.strings = "NA")
+
+
+#Apprécier le dataframe data_stations
+
+str(data_stations)
+
+#3. autres_infos récupère les données de la feuille 4
+
+autres_infos <- read.xlsx(
+  "C:/Users/HP/OneDrive - gouvbj/MVDC/Cours/Projects/Biodiversity/data/raw/Data_Biodiversity.xlsx",
+  sheet = 4,
+  startRow = 1,
+  row = c(1:7),
+  colNames = TRUE,
+  rowNames = FALSE,
+  detectDates = TRUE,
+  sep.names = "_",
+  na.strings = "NA")
+
+#4. Extraire les espèces de cephalophes
+
+cephalophes <- autres_infos$Espèces
+
+#5. geographie récupère dans la feuille 4, les données sur la superficie des villages étudiers
+
+geographie <- read.xlsx(
+  "C:/Users/HP/OneDrive - gouvbj/MVDC/Cours/Projects/Biodiversity/data/raw/Data_Biodiversity.xlsx",
+  sheet = 4,
+  startRow = 10,
+  row = c(10:15),
+  colNames = TRUE,
+  rowNames = FALSE,
+  detectDates = TRUE,
+  sep.names = "_",
+  na.strings = "NA")
+
+```
+
+## Transformations opérées
+
+Au fil de l'appréciation des données fournies, nous avons remarqué quelques anomalies que nous avons dû corriger. Les voici.
+
+### Transformer les valeurs de la colone **Heure_d'observation** du dataframe data_espèces au format HH MM SS
+
+De base dans le dataframe, cette variable est de type charactères (chr), au format 12:38. Pour mieux l'exploiter, nous avons transformer la variable en datetime en utilisant le package lubridate.
+
+
+```{r Transformer_etape_1, echo=FALSE, include=FALSE}
+
+#a. Remplacer la valeur manquante par celle qui est correcte dans le dataset
+
+data_especes$`Heure_d'observation`[1] <- c("12:38")
+
+#b. Transformer la variable en datetime au format HH MM SS.
+
+data_especes$`Heure_d'observation` <- hms(
+  paste0(data_especes$`Heure_d'observation`,
+         ":00"))
+
+#c. Apprécier à nouveau le dataframe data_especes
+
+str(data_especes)
+
+```
+
+### Corriger l'erreur de nomenclature au niveau du nom des stations
+
+Un premier essai de fusion des bases de données data_espèces et data_stations en une base de donnée globale, a fait apparaitre des valeurs manquantes.
+
+
+```{r Transformer_etape_2, echo=FALSE, include=FALSE}
+
+all_data <- data_stations %>%
+  select(-Villages, -Numero_de_la_station) %>%
+  right_join(data_especes,
+            by = c("Stations_globales" = "Stations_d'échantillonnage"))
+
+#a. Apprécier le dataframe all_data
+
+str(all_data)
+
+```
+
+Dans la base crée, aucune données topographiques sur les stations du village de Molako n'était disponible. Une petite recherche a révélé une erreur de nomenclature dans le nomage des stations dans les deux bases de données :
+
+- dans la base data_espèce, les stations portent le nom **Molako01A** ;
+- dans la base data_stations, les stations portent le nom **MolakoA01**.
+
+Cette différente de pattern est à l'origine des données manquantes observées. Pour résoudre le problème, nous avons utilisé la fonction **str_replace** du package **stringr**.
+
+
+```{r Transformer_etape_3, echo=FALSE, include=FALSE}
+
+#a. Corriger l'erreur au niveau du nom des stations.
+
+data_stations <- data_stations %>%
+  mutate(
+    Numero_de_la_station = str_replace(Numero_de_la_station, "([A-Z])([0-9]{1,2})", "\\1\\2"),
+    Stations_globales = str_replace(Stations_globales, "([A-Za-z]+)([A-Z])([0-9]+)", "\\1\\3\\2")
+  )
+
+#b. Réaliser à nouveau la jointure entre data_stations et data_espèces
+
+
+all_data <- data_stations %>%
+  select(-Villages, -Numero_de_la_station) %>%
+  right_join(data_especes,
+            by = c("Stations_globales" = "Stations_d'échantillonnage"))
+
+#c. Observer à nouveau le dataframe all_data
+
+str(all_data)
+
+```
+
+### Créer une variable moment de la journée pour distinguer le jour et la nuit
+
+Nous avons créé cette variable pour apprécier le comportement des cephalophes suivant leur heures d'observation.
+
+
+```{r Transformer_etape_4, echo=FALSE, include=FALSE}
+
+#d. Intégrer la variable moment de la journée
+
+all_data <- all_data %>%
+  mutate(
+    Moment_journee = case_when(
+      hour(`Heure_d'observation`) >= 6 & hour(`Heure_d'observation`) < 18 ~ "jour",
+      TRUE ~ "nuit"
+    ))
+
+str(all_data)
+
+```
+
+### Créer une variable composite de pression anthropique avec la méthode statistique ACP.
+
+Après avoir réalisé des régressions basées sur les distances qui ont été peu concluentes, nous avons opté pour la méthode d'analyse statistique en composantes principales (ACP).
+
+Nous avons utilisé cette méthode pour créer deux set de variables composittes :
+
+- un score de pression anthropique, pour mesurer l'intensité de la pression anthropique à partir des distances des stations d'échantillonnage à l'activité humaine ;
+
+
+```{r Transformer_etape_5, echo=FALSE, include=FALSE}
+
+#Etape 1 . Inverser les distances en proximité
+
+data_stations <- data_stations %>%
+  mutate(
+    Proximite_village = 1/(Distance_Village + 1), # +1 pour éviter la division par zéro
+    Proximite_route = 1/(Distance_Route + 1),
+    Proximite_eau = 1/(Distance_eau + 1),
+    Proximite_camp_de_chasse = 1/(Distance_camp_de_chasse + 1)
+  )
+
+#Etape 2 . Standardiser les variables
+
+arc <- scale(
+  data_stations[, c(
+    "Proximite_village",
+    "Proximite_route",
+    "Proximite_eau",
+    "Proximite_camp_de_chasse"
+  )])                                                                                        
+
+#Etape 3 . Créer la variable composite
+
+acp_arc <- prcomp(arc, center = TRUE, scale. = TRUE)
+summary(acp_arc) #Les 3 premières composantes résument 86,9 % de la variance totale
+
+
+#Etape 4 . Créer la variable synthétique
+
+# Récupérer les scores des 3 premières variables composantes de l'acp
+
+scores_arc <- acp_arc$x[, 1:3]
+
+# Afficher les coefficients (loadings) de l'acp, pour comprendre la contribution
+#de chaque variable corresponsante
+
+loadings_arc <- acp_arc$rotation
+round(loadings_arc[, 1:3], 3)  # Pour PC1 à PC3
+
+
+#Ajouter les 03 variables au jeu de données
+
+
+data_stations <- cbind(
+  data_stations,
+  pression_humaine_globale = scores_arc[, 1],
+  gradient_route_eau = scores_arc[, 2],
+  accessibilite_chasse_traditionnelle = scores_arc[, 3]
+)
+
+```
+
+
+- un score de pression environnementale, qui combine pression anthropique et facteurs environnementaux (pente, indice MODIS) ;
+
+
+```{r Transformer_etape_6, echo=FALSE, include=FALSE}
+
+#Etape 1 . Standardiser les variables
+
+envir <- scale(
+  data_stations[, c(
+    "Proximite_village",
+    "Proximite_route",
+    "Proximite_eau",
+    "Proximite_camp_de_chasse",
+    "MODIS_Degradation",
+    "Pente"
+  )])
+
+
+#Etape 2 . Créer la variable composite pour les variables environnementales
+
+acp_envir <- prcomp(envir, center = TRUE, scale. = TRUE)
+summary(acp_envir) #Les 4 premières composantes résument 77.51% de la variance totale
+
+#Etape 3 . Créer la variable synthétique
+
+# Récupérer les scores des 03 premières variables composantes de l'acp
+
+scores_envir <- acp_envir$x[, 1:4]
+
+# Afficher les coefficients (loadings) de l'acp
+loadings_envir <- acp_envir$rotation
+round(loadings_envir[, 1:4], 4)  # Pour PC1 à PC4, 77.51% 
+
+#Ajouter les 04 variables au jeu de données
+
+data_stations <- cbind(
+  data_stations,
+  pression_environnementale_globale = scores_envir[, 1],
+  gradiant_ecologique = scores_envir[, 2],
+  contraste_zone_accessible_degradee = scores_envir[, 3],
+  accessibilite_point_eau = scores_envir[, 4]
+)
+
+```
+
+En faisant cela, nous créons non pas une seule, mais plusieurs variables composites qui représentent, selon les distances de base qui les composent, des facettes différentes des effets anthropiques et naturelles. C'est également utile pour résumer plusieurs dimensions corrélées de la pression anthropique en un seul score synthétique, facilitant les modèles multivariés.
+
+
+Nous avons enfin, entammé la phase exploratoire des données, à la découverte du dispositif d'étude, du territoire du bassin du Congo et de sa faune.
+
 
 
 

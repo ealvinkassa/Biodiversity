@@ -36,6 +36,46 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
 \usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
@@ -100,7 +140,7 @@
 }
 \newpage
 
-Ce document présente les résultats d'une étude sur la distribution des céphalophes dans cinq villages du bassin du Congo, réalisée dans le cadre d'une évaluation de compétences en analyse de données environnementales.
+Ce document présente les résultats d'une étude sur l'a'impact de l'activité humaine sur une population de céphalophes dans cinq villages du bassin du Congo. Elle est réalisée dans le cadre de l'évaluation formative du temps 1, de la certification en analyse de données massives du Groupe des Ecoles Centrales en partenariaat avec Sèmè City au Bénin.
 
 \newpage
 
@@ -110,21 +150,88 @@ L'étude révèle que l'abondance des céphalophes varie selon l'altitude, la co
 
 \chapter{L'introduction}\label{lintroduction}
 
-Le bassin du Congo, deuxième plus grand massif forestier de la planète, représente un écosystème d'une importance capitale tant à l'échelle régionale que mondiale. Sa biodiversité exceptionnelle, essentielle à la régulation du climat et au maintien des services écosystémiques, est cependant soumise à une pression croissante due aux activités anthropiques. Parmi les groupes d'espèces particulièrement vulnérables, les céphalophes, antilopes forestières, font face à une surexploitation liée au braconnage et à la dégradation de leur habitat.
+Les céphalophes sont des petits bovidés forestiers discrets, mais essentiels au fonctionnement des écosystèmes tropicaux. Leur présence et leur abondance sont influencées par de nombreux facteurs environnementaux et anthropiques, souvent complexes à démêler. Dans un contexte de fragmentation croissante des habitats et de pressions humaines accrues, comprendre les préférences écologiques de ces espèces devient crucial pour orienter efficacement les efforts de conservation.
 
-Face à cette situation préoccupante, les gouvernements des pays du Bassin du Congo ont initié une étude pilote visant à acquérir des données précises et exploitables pour orienter efficacement les stratégies de conservation. Cette démarche s'inscrit dans un contexte plus large où l'analyse de données massives aide à comprendre les interactions complexes entre les activités humaines et les écosystèmes.
-
-Dans le cadre de cette évaluation, nous nous proposons d'appliquer les connaissances et les compétences acquises en analyse de données massives (Temps 1) pour examiner l'impact des pressions anthropiques sur l'abondance des céphalophes. Cette analyse permettra de fournir des éléments concrets aux décideurs pour la mise en place de mesures de gestion adaptées.
+Cette étude s'appuie sur des relevés de pièges photographiques menés dans une aire protégée de l'Afrique de l'Ouest. Elle vise à évaluer l'influence de variables environnementales telles que l'altitude, la couverture forestière et la proximité des activités humaines sur l'abondance de trois espèces de céphalophes : Cephalophus dorsalis, Cephalophus silvicultor et Philantomba maxwellii. En identifiant les préférences spécifiques de chaque espèce, l'étude apporte des éléments concrets pour mieux planifier la gestion des habitats forestiers.
 
 \chapter{Méthodologie de l'étude}\label{muxe9thodologie-de-luxe9tude}
 
-You can add parts to organize one or more book chapters together. Parts can be inserted at the top of an .Rmd file, before the first-level chapter heading in that same file.
+(Ajouter ici une introduction de la section méthodologie)
 
-Add a numbered part: \texttt{\#\ (PART)\ Act\ one\ \{-\}} (followed by \texttt{\#\ A\ chapter})
+\chapter{Données brutes mises à disposition}\label{donnuxe9es-brutes-mises-uxe0-disposition}
 
-Add an unnumbered part: \texttt{\#\ (PART\textbackslash{}*)\ Act\ one\ \{-\}} (followed by \texttt{\#\ A\ chapter})
+Pour cette étude, nous avons reçu un fichier excel nommé \textbf{Data\_Biodiversity.xlsx}. Ce dernier agrège en 4 feuilles, les données quantitatives et qualitatives mises à notre disposition dans le cadre d cet étude :
 
-Add an appendix as a special kind of un-numbered part: \texttt{\#\ (APPENDIX)\ Other\ stuff\ \{-\}} (followed by \texttt{\#\ A\ chapter}). Chapters in an appendix are prepended with letters instead of numbers.
+\begin{itemize}
+\tightlist
+\item
+  data\_espèces : nous y retrouvons, les détails concernant les différentes apparitions de céphalophes enrégistrées par les stations de collecte déployées sur les cinq villages ;
+\item
+  data\_stations : répertorie l'ensemble des installations de station sur le territoire. Cette feuille donne aussi, la nomenclature des noms des stations d'échantillonage, ainsi que des données importantes sur leur lieu d'implantation (relief, caractéristiques naturelles, distance aux routes, etc\ldots)
+\item
+  table\_information : dictionnaire de données de la base \textbf{Data\_Biodiversity.xlsx}
+\item
+  autres\_infos : s'y trouvent des informations importantes pour identifier les différentes espèces et la superficie des villages échantillonés.
+\end{itemize}
+
+\textbf{Data\_Biodiversity.xlsx} est propre, bien structuré, et ne contient pas de données manquantes au début de l'étude.
+
+\chapter{Préparation des données}\label{pruxe9paration-des-donnuxe9es}
+
+Nous avons extrait les informations importantes de la base de données, en utilisant le package openxlsx. C'est celui qui offrait la meilleure flexibilité dans le choix des cellules à extraire de la base fournie.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Activer la librairie pour l\textquotesingle{}utiliser}
+\FunctionTok{library}\NormalTok{(openxlsx)}
+
+\CommentTok{\#Extraction des données importantes}
+\NormalTok{data\_especes }\OtherTok{\textless{}{-}} \FunctionTok{read.xlsx}\NormalTok{(}\StringTok{"C:/Users/HP/OneDrive {-} gouvbj/MVDC/Cours/Projects/Biodiversity/data/raw/Data\_Biodiversity.xlsx"}\NormalTok{,}
+                             \AttributeTok{sheet =} \DecValTok{1}\NormalTok{,}
+                             \AttributeTok{startRow =} \DecValTok{1}\NormalTok{,}
+                             \AttributeTok{colNames =} \ConstantTok{TRUE}\NormalTok{,}
+                             \AttributeTok{rowNames =} \ConstantTok{FALSE}\NormalTok{,}
+                             \AttributeTok{detectDates =} \ConstantTok{TRUE}\NormalTok{,}
+                             \AttributeTok{sep.names =} \StringTok{"\_"}\NormalTok{,}
+                             \AttributeTok{na.strings =} \StringTok{"NA"}\NormalTok{)}
+
+\FunctionTok{str}\NormalTok{(data\_especes)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    2545 obs. of  5 variables:
+##  $ Villages                  : chr  "Sekom" "Sekom" "Sekom" "Sekom" ...
+##  $ Stations_d'échantillonnage: chr  "Sekom01A" "Sekom01A" "Sekom01A" "Sekom01A" ...
+##  $ Espèces                   : chr  "P. monticola" "P. monticola" "C. callipygus" "P. monticola" ...
+##  $ Heure_d'observation       : chr  "0.52638888888888891" "15:13" "17:32" "13:13" ...
+##  $ Dates_d'échantillonnage   : Date, format: "2014-06-04" "2014-06-10" ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Extraction des données importantes}
+\NormalTok{data\_especes }\OtherTok{\textless{}{-}} \FunctionTok{read.xlsx}\NormalTok{(}\StringTok{"C:/Users/HP/OneDrive {-} gouvbj/MVDC/Cours/Projects/Biodiversity/data/raw/Data\_Biodiversity.xlsx"}\NormalTok{,}
+                             \AttributeTok{sheet =} \DecValTok{1}\NormalTok{,}
+                             \AttributeTok{startRow =} \DecValTok{1}\NormalTok{,}
+                             \AttributeTok{colNames =} \ConstantTok{TRUE}\NormalTok{,}
+                             \AttributeTok{rowNames =} \ConstantTok{FALSE}\NormalTok{,}
+                             \AttributeTok{detectDates =} \ConstantTok{TRUE}\NormalTok{,}
+                             \AttributeTok{sep.names =} \StringTok{"\_"}\NormalTok{,}
+                             \AttributeTok{na.strings =} \StringTok{"NA"}\NormalTok{)}
+
+\FunctionTok{str}\NormalTok{(data\_especes)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    2545 obs. of  5 variables:
+##  $ Villages                  : chr  "Sekom" "Sekom" "Sekom" "Sekom" ...
+##  $ Stations_d'échantillonnage: chr  "Sekom01A" "Sekom01A" "Sekom01A" "Sekom01A" ...
+##  $ Espèces                   : chr  "P. monticola" "P. monticola" "C. callipygus" "P. monticola" ...
+##  $ Heure_d'observation       : chr  "0.52638888888888891" "15:13" "17:32" "13:13" ...
+##  $ Dates_d'échantillonnage   : Date, format: "2014-06-04" "2014-06-10" ...
+\end{verbatim}
 
 \chapter{Résultats de l'analyse exploratoire et statistique}\label{ruxe9sultats-de-lanalyse-exploratoire-et-statistique}
 
