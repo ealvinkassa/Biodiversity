@@ -1,7 +1,0 @@
-bookdown::pdf_book:
-  css: style.css
-  latex_engine: xelatex
-  toc: true
-  number_sections: true
-  fig_caption: true
-  keep_tex: true

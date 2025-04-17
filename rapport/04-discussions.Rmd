@@ -1,7 +1,0 @@
-# Discussions
-
-
-- L’hypothèse 1 est confirmée : proximité des camps réduit l’abondance.
-- L’hypothèse 2 est partiellement validée.
-- L’heure d’observation influe peu, sauf tôt le matin.
-
