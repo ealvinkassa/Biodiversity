@@ -1,0 +1,15 @@
+\usepackage{booktabs}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+
+% Couleur personnalisée
+\definecolor{ADSCblue}{RGB}{16,45,68}
+
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{ADSCblue}}
+  {\chaptername\ \thechapter}{20pt}{\Huge}
+
+% Pas de numérotation pour la page de garde
+\pagestyle{empty}
