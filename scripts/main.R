@@ -3,7 +3,7 @@
 # Vérifier si les packages sont installés
 required_packages <- c("carData", "factoextra", "lme4", "Matrix", 
                        "readxl", "openxlsx", "lubridate", "dplyr", 
-                       "stringr", "ggplot2")
+                       "stringr", "ggplot2", "tidyr")
 
 new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
 if(length(new_packages)) install.packages(new_packages)
@@ -28,6 +28,10 @@ data_especes <- read.xlsx("data/raw/Data_Biodiversity.xlsx",
                              sep.names = "_",
                              na.strings = "NA")
 
+#Apprécier le dataframe data_especes
+
+str(data_especes)
+
 #Traitement pour exploiter efficacement la colone data_espece$Heure_d'observation
 #a. Remplacer la valeur manquante par celle qui est correcte dans le dataset
 #b. Transformer la variable en datetime au format HH MM SS.
@@ -36,6 +40,10 @@ data_especes$`Heure_d'observation`[1] <- c("12:38")
 data_especes$`Heure_d'observation` <- hms(
   paste0(data_especes$`Heure_d'observation`,
          ":00"))
+
+#Apprécier à nouveau le dataframe data_especes
+
+str(data_especes)
 
 
 #2. data_stations récupère les données de la feuille 2
@@ -49,6 +57,11 @@ data_stations <- read.xlsx("data/raw/Data_Biodiversity.xlsx",
                            sep.names = "_",
                            na.strings = "NA")
 
+
+#Apprécier le dataframe data_stations
+
+str(data_stations)
+
 #Corriger l'erreur au niveau du nom des stations. Transformer à MolakoA20 en Molako20A
 #pour éviter la formation de données manquantes lors de la jointure à venir.
 
@@ -57,6 +70,10 @@ data_stations <- data_stations %>%
     Numero_de_la_station = str_replace(Numero_de_la_station, "([A-Z])([0-9]{1,2})", "\\1\\2"),
     Stations_globales = str_replace(Stations_globales, "([A-Za-z]+)([A-Z])([0-9]+)", "\\1\\3\\2")
   )
+
+#Apprécier à nouveau le dataframe data_stations
+
+str(data_stations)
 
 
 #A - Créer un score de pression anthropique, pour mesurer l'intensité de la pression anthropique.
@@ -260,7 +277,6 @@ stations <- total_stations_par_village %>%
             by = "Villages")
 
 
-
 #II - Dénombrement de la population de cephalophes sur le territoire
 
 
@@ -344,7 +360,21 @@ total_cephalophes_par_type_station <- data_especes %>%
 
 total_cephalophes_par_type_villages <- data_especes %>%
   group_by(Villages, Espèces) %>%
-  summarise(Nombre_observations = n(), .groups = "drop")
+  summarise(Nombre_observations = n(), .groups = "drop") %>%
+  arrange(Villages, desc(Nombre_observations))
+
+
+#13. Richesse de la variété de cephalophes par territoire
+
+richesse_par_stations <- data_especes %>%
+  group_by(`Stations_d'échantillonnage`) %>%
+  summarise(Richesse = n_distinct(Espèces))
+
+
+# Richesse spécifique par station (nombre d'espèces uniques observées)
+richesse_station <- data_especes %>%
+  group_by(Stations_dechantillonnage) %>%
+  summarise(Richesse = n_distinct(Especes))
 
 
 #0. Graphe résumé du dénombrement
