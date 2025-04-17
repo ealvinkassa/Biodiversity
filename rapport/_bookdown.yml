@@ -1,0 +1,5 @@
+book_filename: "Le3 . Rapport d'analyse"
+delete_merged_file: true
+language:
+  ui:
+    chapter_name: "Chapitre "
