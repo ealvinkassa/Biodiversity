@@ -3,7 +3,7 @@
 # Vérifier si les packages sont installés
 required_packages <- c("carData", "factoextra", "lme4", "Matrix", 
                        "readxl", "openxlsx", "lubridate", "dplyr", 
-                       "stringr", "ggplot2", "tidyr")
+                       "stringr", "ggplot2", "tidyr", "car")
 
 new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
 if(length(new_packages)) install.packages(new_packages)
@@ -369,12 +369,6 @@ total_cephalophes_par_type_villages <- data_especes %>%
 richesse_par_stations <- data_especes %>%
   group_by(`Stations_d'échantillonnage`) %>%
   summarise(Richesse = n_distinct(Espèces))
-
-
-# Richesse spécifique par station (nombre d'espèces uniques observées)
-richesse_station <- data_especes %>%
-  group_by(Stations_dechantillonnage) %>%
-  summarise(Richesse = n_distinct(Especes))
 
 
 #0. Graphe résumé du dénombrement
