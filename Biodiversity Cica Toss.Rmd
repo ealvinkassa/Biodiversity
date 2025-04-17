@@ -1,0 +1,136 @@
+---
+title: "Explorations Cica"
+output: html_document
+date: "2025-04-14"
+---
+
+
+
+```{r setup, include=FALSE}
+
+```
+
+
+```{r }
+
+install.packages("openxlsx")
+install.packages("dplyr")
+install.packages("zoo")
+install
+library(zoo)
+library(dplyr)
+library(openxlsx)
+library(tidyverse)
+library(reshape2)
+library(ggplot2)   
+library(corrplot)
+library(knitr)
+library(kableExtra)
+library(car)  
+library(lmtest)  
+library(ggplot2)  
+```
+
+
+
+```{r}
+data_especes <- read.xlsx("C:/Projet Biodiversity/Biodiversity/data/raw/Data_Biodiversity.xlsx", sheet = 1)
+data_stations <- read.xlsx("C:/Projet Biodiversity/Biodiversity/data/raw/Data_Biodiversity.xlsx", sheet = 2)
+
+
+```
+```{r}
+```
+
+
+```{r}
+str(data_especes)
+summary(data_especes)
+head(data_especes)
+
+```
+
+#Nombre total d’observations par espèce
+
+```{r}
+table(data_especes$Espèces)  # Attention à l’orthographe exacte de la colonne
+
+```
+```{r}
+library(ggplot2)
+
+
+ggplot(data_especes, aes(x = Espèces)) +
+  geom_bar(fill = "#29b3a6") +
+  theme_minimal() +
+  coord_flip() +
+  labs(title = "Nombre d'observations par espèce")
+
+colnames(especes)
+
+ggplot(especes, aes(x = Especes)) +
+  geom_bar(fill = "#29b3a6") +
+  theme_minimal() +
+  coord_flip() +
+  labs(
+    title = "Nombre d'observations par espèce",
+    x = "Espèces",
+    y = "Nombre d'observations"
+  )
+```
+
+#Nombre d’observations par station
+
+```{r}
+table(data_stations$`Numero.de.la.station`)
+
+```
+#Nombre d’observations par date
+```{r}
+table(data_especes$`Dates.d'échantillonnage`)
+
+```
+#Distribution des heures d’observation
+```{r}
+hist(as.numeric(data_especes$`Heure.d'observation`),
+     main = "Distribution des heures d’observation",
+     xlab = "Heure (format numérique)", col = "#29b3a6")
+
+```
+##Exploration du dataset des stations
+#Apercu
+```{r}
+str(data_stations)
+summary(data_stations)
+head(data_stations)
+
+```
+
+#Distribution des distances
+
+```{r}
+hist(data_stations$Distance.camp.de.chasse, col = "#29b3a6", main = "Distance au camp de chasse", xlab = "mètres")
+hist(data_stations$Distance.Village, col = "#29b3a6", main = "Distance au village", xlab = "mètres")
+hist(data_stations$Distance.Route, col = "#29b3a6", main = "Distance à la route", xlab = "mètres")
+hist(data_stations$Distance.eau, col = "#29b3a6", main = "Distance à l'eau", xlab = "mètres")
+
+```
+
+#Distribution de la pente
+```{r}
+hist(data_stations$Pente, col = "#29b3a6", main = "Distribution de la pente", xlab = "Degrés")
+
+```
+#Environnement dégradé ou non (MODIS)
+```{r}
+table(data_stations$MODIS.Degradation)
+ggplot(data_stations, aes(x = factor(MODIS.Degradation))) +
+  geom_bar(fill = "#29b3a6") +
+  theme_minimal() +
+  labs(title = "Stations dégradées vs non-dégradées", x = "MODIS (0 = dégradé)", y = "Nombre de stations")
+
+```
+
+
+
+

@@ -1,0 +1,271 @@
+---
+title: "biodiversity"
+output: html_document
+date: "2025-04-17"
+---
+# --- 1. Installation et Chargement des Packages ---
+
+## Installation des packages 
+```{r install_packages, echo=TRUE, eval=FALSE}
+list.of.packages <- c("openxlsx", "dplyr", "zoo", "ggspatial", "sf", "stringr", "knitr", "kableExtra",
+                      "tidyverse", "reshape2", "ggplot2", "corrplot", "car", "lmtest")
+
+```
+Chargement des packages
+
+```{r cars}
+
+library(zoo)
+library(dplyr)
+library(openxlsx)
+library(tidyverse) # Inclut ggplot2, tidyr, readr, purrr, tibble, stringr, forcats
+library(reshape2)
+library(ggplot2)
+library(corrplot)
+library(knitr)
+library(kableExtra)
+library(car)      # Pour vif() (Variance Inflation Factor)
+library(lmtest)   # Pour les tests de modèles linéaires
+library(ggspatial)
+library(sf)       # Pour les données spatiales
+library(stringr)
+library(ggthemes)
+
+```
+
+--- 2. Chargement des Données ---
+```{r }
+# Charger les données depuis les fichiers Excel
+data_especes <- read.xlsx("C:/Projet Biodiversity/Biodiversity/data/raw/Data_Biodiversity.xlsx", sheet = 1)
+data_stations <- read.xlsx("C:/Projet Biodiversity/Biodiversity/data/raw/Data_Biodiversity.xlsx", sheet = 2)
+
+```
+
+
+--- 3. Nettoyage et Préparation des Données ---
+3.1. Conversion des Dates
+```{r}
+# Convertir la colonne de dates au format date (si nécessaire)
+data_especes <- data_especes %>%
+  mutate(`Dates.d'échantillonnage` = as.Date(`Dates.d'échantillonnage`, origin = "1899-12-30"))
+```
+
+3.2. Manipulation des Données de Stations
+```{r}
+# 3.2.1. Filtrer les lignes du village Molako
+molako_rows <- which(data_stations$Villages == "Molako")
+
+# 3.2.2. Corriger le format des numéros de station (si nécessaire)
+data_stations$Numero.de.la.station[molako_rows] <- sub("([A-Z])(\\d+)", "\\2\\1", data_stations$Numero.de.la.station[molako_rows])
+
+# 3.2.3. Recréer la variable Stations.globales
+data_stations$Stations.globales <- paste0(data_stations$Villages, data_stations$Numero.de.la.station)
+
+```
+
+3.3. Correction des Heures
+
+```{r}
+# Normaliser le format des heures d'observation
+data_especes <- data_especes %>%
+  mutate(
+    Heure.d.observation = case_when(
+      # Convertir les valeurs numériques en format HH:MM
+      !is.na(as.numeric(as.character(Heure.d'observation))) & !str_detect(Heure.d.observation, ":") ~
+        format(as.POSIXct(as.numeric(as.character(Heure.d'observation)) * 86400, origin = "1970-01-01", tz = "UTC"), "%H:%M"),
+      # Conserver les autres valeurs
+      TRUE ~ Heure.d'observation
+    )
+  )
+#Erreur
+```
+
+--- 4. Fusion des Données ---
+```{r}
+# Fusionner les données d'espèces et de stations en utilisant la colonne commune "Stations.globales"
+data_observations_stations <- data_especes %>%
+  left_join(data_stations, by = c("Stations.d'échantillonnage" = "Stations.globales"))
+
+```
+
+--- 5. Analyses Préliminaires de la Biodiversité ---
+5.1. Richesse Spécifique par Village
+```{r}
+# Calculer le nombre d'espèces distinctes observées dans chaque village
+richesse_specifique_par_village <- data_observations_stations %>%
+  group_by(Villages.x) %>%
+  summarise(Richesse_specifique = n_distinct(Espèces), .groups = 'drop') %>%
+  arrange(desc(Richesse_specifique)) # Trier par richesse décroissante
+
+```
+
+
+5.2. Abondance Relative des Espèces par Village
+```{r}
+# Calculer l'abondance relative de chaque espèce dans chaque village
+abondance_relative_par_village <- data_observations_stations %>%
+  group_by(Villages.x, Espèces) %>%
+  summarise(Nombre_observations = n(), .groups = 'drop') %>% # Nombre d'observations par espèce et village
+  mutate(Abondance_relative = Nombre_observations / sum(Nombre_observations), .by = Villages.x) # Abondance relative
+
+```
+
+
+
+
+--- 6. Visualisation des Analyses Préliminaires ---
+6.1. Tableau de la Richesse Spécifique
+```{r}
+# Créer un tableau formaté pour afficher la richesse spécifique par village
+tableau_richesse <- richesse_specifique_par_village %>%
+  mutate(Rang = row_number()) %>% # Ajouter un rang pour faciliter la lecture
+  select(Rang, Villages.x, Richesse_specifique) %>% # Sélectionner les colonnes à afficher
+  kable(caption = "Richesse spécifique par village",
+        col.names = c("Rang", "Village", "Nombre d'espèces"),
+        align = c("c", "l", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+tableau_richesse
+
+```
+
+6.2. Graphique de la Richesse Spécifique
+```{r}
+# Créer un graphique à barres pour visualiser la richesse spécifique par village
+graphique_richesse <- ggplot(richesse_specifique_par_village, aes(x = reorder(Villages.x, Richesse_specifique), y = Richesse_specifique)) +
+  geom_bar(stat = "identity", fill = "darkgreen") +
+  labs(title = "Richesse spécifique par village", x = "Village", y = "Nombre d'espèces") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  geom_text(aes(label = Richesse_specifique), vjust = -0.3, size = 4, color = "black") +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, max(richesse_specifique_par_village$Richesse_specifique) * 1.1))
+
+graphique_richesse
+
+```
+
+
+
+6.3. Graphique de l'Abondance Relative
+```{r}
+# Créer un graphique à barres empilées pour visualiser l'abondance relative des espèces par village
+graphique_abondance <- ggplot(abondance_relative_par_village, aes(x = Villages.x, y = Abondance_relative, fill = Espèces)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Abondance relative des espèces par village", x = "Village", y = "Abondance relative", fill = "Espèce") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  scale_y_continuous(expand = c(0, 0))
+
+graphique_abondance
+
+```
+
+--- 7. Affichage des Résultats Préliminaires ---
+```{r}
+# Afficher les résultats des analyses préliminaires
+print("Tableau de la Richesse Spécifique:")
+print(tableau_richesse)
+
+print("\nGraphique de la Richesse Spécifique:")
+print(graphique_richesse)
+
+print("\nGraphique de l'Abondance Relative:")
+print(graphique_abondance)
+
+```
+
+--- 8. Exploration Complémentaire des Données ---
+Distribution des Espèces
+```{r}
+ggplot(data_especes, aes(x = Espèces)) +
+  geom_bar(fill = "#29b3a6") +
+  theme_minimal() +
+  coord_flip() +
+  labs(title = "Nombre d'observations par espèce")
+
+```
+Distribution des Distances
+
+
+```{r}
+
+hist(data_stations$Distance.camp.de.chasse, col = "#29b3a6", main = "Distance au camp de chasse", xlab = "mètres")
+hist(data_stations$Distance.Village, col = "#29b3a6", main = "Distance au village", xlab = "mètres")
+hist(data_stations$Distance.Route, col = "#29b3a6", main = "Distance à la route", xlab = "mètres")
+hist(data_stations$Distance.eau, col = "#29b3a6", main = "Distance à l'eau", xlab = "mètres")
+
+
+library("ggplot2")
+library("patchwork") # Pour combiner les graphiques (si souhaité)
+library("ggthemes")
+#Erreur
+
+```
+
+
+
+Environnement Dégradé ou Non (MODIS)
+```{r}
+table(data_stations$MODIS.Degradation)
+ggplot(data_stations, aes(x = factor(MODIS.Degradation))) +
+  geom_bar(fill = "#29b3a6") +
+  theme_minimal() +
+  labs(title = "Stations dégradées vs non-dégradées", x = "MODIS (0 = dégradé)", y = "Nombre de stations")
+
+```
+
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+
+```{r}
+
+```
+
+
+
+```{r}
+
+```
+
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+
