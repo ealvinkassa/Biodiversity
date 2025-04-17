@@ -252,6 +252,7 @@ total_stations_par_village <- data_stations %>%
   distinct(Villages, Stations_globales) %>%
   count(Villages, name = "Nb_Station_Globales")
 
+print(total_stations_par_village)
 
 #2. Le nombre de stations d'échantillonnage par villages
 #pour lesquels il y a eu observation de cephalophes
@@ -260,6 +261,8 @@ total_stations_cephalophes <- data_especes %>%
   distinct(Villages, `Stations_d'échantillonnage`) %>%
   count(Villages, name = "Nb_Station_Cephalophes")
 
+print(total_stations_cephalophes)
+
 #3. Le nombre de stations où le MODIS_Degratation est de 1 (en forêt)
 
 total_stations_en_foret <- data_stations %>%
@@ -267,6 +270,7 @@ total_stations_en_foret <- data_stations %>%
   group_by(Villages) %>%
   count(Villages, name = "Nb_Station_Forestiere")
 
+print(total_stations_en_foret)
 
 #4. Comparatif des stations de détection des cephalophes
 
@@ -275,6 +279,9 @@ stations <- total_stations_par_village %>%
             by = c("Villages")) %>%
   left_join(total_stations_cephalophes,
             by = "Villages")
+
+
+print(stations)
 
 
 #II - Dénombrement de la population de cephalophes sur le territoire
@@ -286,6 +293,7 @@ total_cephalophes_par_village <- data_especes %>%
   group_by(Villages) %>%
   summarise(Nombre_total_cephalophes = n(), .groups = "drop")
 
+print(total_cephalophes_par_village)
 
 #2. Le nombre total de céphalophes par type
 
@@ -293,6 +301,7 @@ total_cephalophes_par_type <- data_especes %>%
   group_by(Espèces) %>%
   summarise(Nombre_total_cephalophes = n(), .groups = "drop")
 
+print(total_cephalophes_par_type)
 
 #3. Le nombre total de cephalophes par stations
 
@@ -300,6 +309,7 @@ total_cephalophes_par_station <- data_especes %>%
   group_by(`Stations_d'échantillonnage`, Villages) %>%
   summarise(Nombre_total_cephalophes = n(), .groups = "drop")
 
+print(total_cephalophes_par_station)
 
 #4. Le nombre total de cephalophes par MODIS Degradation
 
@@ -307,12 +317,15 @@ total_cephalophes_par_modis <- all_data %>%
   group_by(MODIS_Degradation) %>%
   summarise(Nombre_cephalophes = n(), .groups = "drop")
 
+print(total_cephalophes_par_modis)
 
 #5. Le nombre total de cephalophes par moment de la journée
 
 total_cephalophes_par_moment_journee <- all_data %>%
   group_by(Moment_journee) %>%
   summarise(Nombre_cephalophes = n(), .groups = "drop")
+
+print(total_cephalophes_par_moment_journee)
 
 
 #6. Le nombre total de cephalophes par date d'observation
@@ -321,6 +334,8 @@ total_cephalophes_par_date <- data_especes %>%
   group_by(`Dates_d'échantillonnage`) %>%
   summarise(Nombre_total_cephalophes = n(), .groups = "drop")
 
+print(total_cephalophes_par_date)
+
 
 #7. Le nombre total de cephalophes par espèce par moment de la journée
 
@@ -328,12 +343,15 @@ total_cephalophes_par_type_moment_journee <- all_data %>%
   group_by(Espèces, Moment_journee) %>%
   summarise(Nombre_cephalophes = n(), .groups = "drop")
 
+print(total_cephalophes_par_type_moment_journee)
+
 #8. Le nombre total de cephalophes par village par moment de la journée
 
 total_cephalophes_par_village_moment_journee <- all_data %>%
   group_by(Villages, Moment_journee) %>%
   summarise(Nombre_cephalophes = n(), .groups = "drop")
 
+print(total_cephalophes_par_village_moment_journee)
 
 #9. Le nombre total de cephalophes par type et MODIS Degradation
 
@@ -341,6 +359,7 @@ total_cephalophes_par_type_modis <- all_data %>%
   group_by(Espèces, MODIS_Degradation) %>%
   summarise(Nombre_observations = n(), .groups = "drop")
 
+print(total_cephalophes_par_type_modis)
 
 #10. Le nombre de céphalophes observées par type et villages
 
@@ -348,6 +367,7 @@ total_cephalophes_par_type_villages <- data_especes %>%
   group_by(Espèces, Villages) %>%
   summarise(Nombre_observations = n(), .groups = "drop")
 
+print(total_cephalophes_par_type_villages)
 
 #11. Le de cephalophes par type et par station
 
@@ -355,6 +375,7 @@ total_cephalophes_par_type_station <- data_especes %>%
   group_by(`Stations_d'échantillonnage`, Espèces) %>%
   summarise(Nombre_observations = n(), .groups = "drop")
 
+print(total_cephalophes_par_type_station)
 
 #12. Le nombre de céphalophes observées par type et villages
 
@@ -363,12 +384,16 @@ total_cephalophes_par_type_villages <- data_especes %>%
   summarise(Nombre_observations = n(), .groups = "drop") %>%
   arrange(Villages, desc(Nombre_observations))
 
+print(total_cephalophes_par_type_villages)
+
 
 #13. Richesse de la variété de cephalophes par territoire
 
 richesse_par_stations <- data_especes %>%
   group_by(`Stations_d'échantillonnage`) %>%
   summarise(Richesse = n_distinct(Espèces))
+
+print(richesse_par_stations)
 
 
 #0. Graphe résumé du dénombrement
@@ -408,7 +433,7 @@ geographie <- geographie %>%
     Couverture_Foret_Cephalophes = (Nb_Station_Forestiere_Cephalophes/Nb_Station_Cephalophes)
   )
 
-
+print(geographie)
   
 #III - Activité humaine (distances de l'homme par rapport à l'abondance
 #des cephalophes)

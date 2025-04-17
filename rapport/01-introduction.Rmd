@@ -1,11 +1,23 @@
-# Hello bookdown 
+#L'introduction
 
-All chapters start with a first-level heading followed by your chapter title, like the line above. There should be only one first-level heading (`#`) per .Rmd file.
+## Contexte de l’étude
+Le bassin du Congo constitue la deuxième plus grande forêt tropicale du monde. Il abrite une faune exceptionnelle, mais fortement menacée par la pression humaine croissante.
 
-## A section
+## Problématique
+Comment les pressions anthropiques et les variables environnementales influencent-elles la répartition des céphalophes ?
 
-All chapter sections start with a second-level (`##`) or higher heading followed by your section title, like the sections above and below here. You can have as many as you want within a chapter.
+## Objectifs
 
-### An unnumbered section {-}
+- Comprendre les facteurs influençant l’abondance des céphalophes
+- Identifier les variables environnementales et anthropiques pertinentes
 
-Chapters and sections are numbered by default. To un-number a heading, add a `{.unnumbered}` or the shorter `{-}` at the end of the heading, like in this section.
+- **Général** : Comprendre l’influence combinée de l’environnement et de l’homme sur les céphalophes.
+- **Spécifiques** :
+  - Déterminer les facteurs expliquant l’abondance locale.
+  - Identifier les zones à forte pression humaine.
+  - Comparer les profils écologiques entre villages.
+
+## Hypothèses
+1. Les villages les plus proches des routes ou camps ont une moindre densité de céphalophes.
+2. La végétation dense favorise leur présence.
+3. L’heure de la journée influence l’activité observée.
