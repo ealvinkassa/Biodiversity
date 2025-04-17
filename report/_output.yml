@@ -1,0 +1,14 @@
+bookdown::gitbook:
+  css: style.css
+  lib_dir: assets
+  split_by: section
+  config:
+    toolbar:
+      position: static
+bookdown::pdf_book:
+  includes:
+    in_header: preamble.tex
+  latex_engine: xelatex
+  keep_tex: yes
+bookdown::html_book:
+  css: toc.css

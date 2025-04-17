@@ -1,0 +1,13 @@
+book_filename: "Report"
+delete_merged_file: true
+language:
+  label:
+    fig: "Figure "
+    tab: "Tableau "
+    eq: "Équation "
+  ui:
+    chapter_name: "Chapitre "
+    appendix_name: "Annexe "
+    references: "Références"
+    abstract: "Résumé"
+    toc: "Table des matières"

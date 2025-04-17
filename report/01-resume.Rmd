@@ -1,0 +1,11 @@
+\newpage
+
+Ce document présente les résultats d'une étude sur la distribution des céphalophes dans cinq villages du bassin du Congo, réalisée dans le cadre d'une évaluation de compétences en analyse de données environnementales.
+
+\newpage
+
+
+# Résumé de l'étude
+
+L’étude révèle que l’abondance des céphalophes varie selon l’altitude, la couverture forestière et la distance aux activités humaines. C. dorsalis préfère les zones denses et isolées, C. silvicultor les forêts en altitude, tandis que P. maxwellii tolère mieux la proximité humaine. Ces résultats soulignent l’importance de stratégies différenciées de conservation selon les espèces.
+

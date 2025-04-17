@@ -1,0 +1,145 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{book}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\ifLuaTeX
+\usepackage[bidi=basic]{babel}
+\else
+\usepackage[bidi=default]{babel}
+\fi
+\babelprovide[main,import]{french}
+% get rid of language-specific shorthands (see #6817):
+\let\LanguageShortHands\languageshorthands
+\def\languageshorthands#1{}
+\usepackage{booktabs}
+\usepackage{datetime}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Analyse de l'impact de la pression anthropique sur la biodiversité dans le bassin du Congo},
+  pdfauthor={Cica TOSSOU, Thibaut TOSSOU, Estève Alvin KASSA},
+  pdflang={fr},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Analyse de l'impact de la pression anthropique sur la biodiversité dans le bassin du Congo}
+\author{Cica TOSSOU, Thibaut TOSSOU, Estève Alvin KASSA}
+\date{2025-04-17}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{1}
+\tableofcontents
+}
+\newpage
+
+Ce document présente les résultats d'une étude sur la distribution des céphalophes dans cinq villages du bassin du Congo, réalisée dans le cadre d'une évaluation de compétences en analyse de données environnementales.
+
+\newpage
+
+\chapter{Résumé de l'étude}\label{ruxe9sumuxe9-de-luxe9tude}
+
+L'étude révèle que l'abondance des céphalophes varie selon l'altitude, la couverture forestière et la distance aux activités humaines. C. dorsalis préfère les zones denses et isolées, C. silvicultor les forêts en altitude, tandis que P. maxwellii tolère mieux la proximité humaine. Ces résultats soulignent l'importance de stratégies différenciées de conservation selon les espèces.
+
+\chapter{L'introduction}\label{lintroduction}
+
+Le bassin du Congo, deuxième plus grand massif forestier de la planète, représente un écosystème d'une importance capitale tant à l'échelle régionale que mondiale. Sa biodiversité exceptionnelle, essentielle à la régulation du climat et au maintien des services écosystémiques, est cependant soumise à une pression croissante due aux activités anthropiques. Parmi les groupes d'espèces particulièrement vulnérables, les céphalophes, antilopes forestières, font face à une surexploitation liée au braconnage et à la dégradation de leur habitat.
+
+Face à cette situation préoccupante, les gouvernements des pays du Bassin du Congo ont initié une étude pilote visant à acquérir des données précises et exploitables pour orienter efficacement les stratégies de conservation. Cette démarche s'inscrit dans un contexte plus large où l'analyse de données massives aide à comprendre les interactions complexes entre les activités humaines et les écosystèmes.
+
+Dans le cadre de cette évaluation, nous nous proposons d'appliquer les connaissances et les compétences acquises en analyse de données massives (Temps 1) pour examiner l'impact des pressions anthropiques sur l'abondance des céphalophes. Cette analyse permettra de fournir des éléments concrets aux décideurs pour la mise en place de mesures de gestion adaptées.
+
+\chapter{Méthodologie de l'étude}\label{muxe9thodologie-de-luxe9tude}
+
+You can add parts to organize one or more book chapters together. Parts can be inserted at the top of an .Rmd file, before the first-level chapter heading in that same file.
+
+Add a numbered part: \texttt{\#\ (PART)\ Act\ one\ \{-\}} (followed by \texttt{\#\ A\ chapter})
+
+Add an unnumbered part: \texttt{\#\ (PART\textbackslash{}*)\ Act\ one\ \{-\}} (followed by \texttt{\#\ A\ chapter})
+
+Add an appendix as a special kind of un-numbered part: \texttt{\#\ (APPENDIX)\ Other\ stuff\ \{-\}} (followed by \texttt{\#\ A\ chapter}). Chapters in an appendix are prepended with letters instead of numbers.
+
+\chapter{Résultats de l'analyse exploratoire et statistique}\label{ruxe9sultats-de-lanalyse-exploratoire-et-statistique}
+
+\section{Footnotes}\label{footnotes}
+
+Footnotes are put inside the square brackets after a caret \texttt{\^{}{[}{]}}. Like this one \footnote{This is a footnote.}.
+
+\section{Citations}\label{citations}
+
+Reference items in your bibliography file(s) using \texttt{@key}.
+
+\chapter{Discussions}\label{discussions}
+
+\chapter{Conclusion}\label{conclusion}
+
+\chapter{Parts}\label{parts}
+
+\end{document}
