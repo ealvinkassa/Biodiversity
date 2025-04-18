@@ -9,6 +9,7 @@ bookdown::pdf_book:
   includes:
     in_header: preamble.tex
   latex_engine: xelatex
+  keep_md: true
   keep_tex: yes
 bookdown::html_book:
   css: toc.css

@@ -1,0 +1,515 @@
+---
+title: Analyse de l'impact de la pression anthropique sur la biodiversité dans le
+  bassin du Congo
+author: "Cica TOSSOU, Thibaut TOSSOU, Estève Alvin KASSA"
+date: "2025-04-18"
+output: pdf_document
+site: bookdown::bookdown_site
+documentclass: book
+lang: fr
+bibliography:
+- book.bib
+- packages.bib
+biblio-style: apalike
+link-citations: true
+description: This is a minimal example of using the bookdown package to write a book.
+cover-image: assets/cephalophe.png
+---
+
+<!--chapter:end:index.Rmd-->
+
+\newpage
+
+Ce document présente les résultats d'une étude sur l'a'impact de l'activité humaine sur une population de céphalophes dans cinq villages du bassin du Congo. Elle est réalisée dans le cadre de l'évaluation formative du temps 1, de la certification en analyse de données massives du Groupe des Ecoles Centrales en partenariaat avec Sèmè City au Bénin.
+
+\newpage
+
+
+# Résumé de l'étude
+
+L’étude révèle que l’abondance des céphalophes varie selon l’altitude, la couverture forestière et la distance aux activités humaines. C. dorsalis préfère les zones denses et isolées, C. silvicultor les forêts en altitude, tandis que P. maxwellii tolère mieux la proximité humaine. Ces résultats soulignent l’importance de stratégies différenciées de conservation selon les espèces.
+
+
+<!--chapter:end:01-resume.Rmd-->
+
+# L'introduction
+
+La biodiversité du Bassin du Congo représente l'une des plus grandes richesses naturelles de la planète. Elle abrite une variété d'écosystèmes forestiers exceptionnels et constitue un réservoir inestimable de faune et de flore. Cependant, cette biodiversité est aujourd'hui soumise à de fortes pressions anthropiques, notamment l'exploitation forestière, la chasse, l'agriculture itinérante et l'extension des infrastructures humaines. Ces activités humaines modifient les habitats naturels, compromettent la survie des espèces et menacent l'équilibre écologique de la région.
+
+
+Ce thème d’étude propose d'analyser l'impact de ces pressions anthropiques sur la biodiversité, en se concentrant sur les céphalophes, un groupe d'espèces de petits antilopidés qui jouent un rôle écologique important dans les forêts du Bassin du Congo.
+
+
+## La problématique
+
+Malgré leur importance écologique, les céphalophes sont particulièrement vulnérables à la dégradation de leur habitat naturel. Les activités humaines telles que la déforestation, la chasse commerciale et la fragmentation des forêts réduisent la disponibilité en ressources et perturbent leurs comportements. Or, les études quantitatives permettant de relier ces pressions à des indicateurs de biodiversité tels que la diversité de l’espèce ou l'abondance sont encore rares dans cette région.
+
+La question centrale de cette étude est donc la suivante : dans quelle mesure les variables environnementales et anthropiques influencent-elles la diversité et l’abondance des céphalophes dans le Bassin du Congo ?
+
+
+## Objectifs 
+
+L'objectif général de cette étude est donc de comprendre de façon précise, les facteurs qui influencent l’abondance des céphalophes dans le bassin du Congo.
+
+De façon spécifique, nous devrons :
+
+* Comparer l’abondance des espèces de céphalophes selon les villages
+* Identifier les facteurs géographiques clés liés à ces différences
+* Mesurer l'impact environnemental sur les céphalophes du bassin du Congo
+
+
+## Hypothèses
+
+
+Voici 3 hypothèses que nous posons à cet effet :
+
+Hypothèse 1 : Plus la pression anthropique est forte, moins les céphalophes sont détectés, en fréquence et en abondance.
+
+Hypothèse 2 : L’effet de la pression humaine est modulé par les caractéristiques naturelles du site (relief, végétation, accessibilité aux ressources).
+
+Hypothèse 3 : Les effets observés sont significativement variables d'un village à l'autre.
+
+
+À partir de données collectées sur plusieurs stations d'échantillonnage installées dans cinq (05) villages, à savoir : Gonou, Lolam, Molako, Mapi et Sekom, nous analyserons les facteurs environnementaux et les pressions humaines qui influencent la biodiversité (richesse des espèces) et l'abondance de ces espèces. 
+
+
+<!--chapter:end:02-introduction.Rmd-->
+
+# Méthodologie de l'étude
+
+Voici étape par étape ce que nous avons essayé de faire, entre la réception du sujet d'étude et les conclusions que nous avons tirés.
+
+Données brutes → Préparation → Transformation → Modélisation → Résultats
+
+## Données brutes mises à disposition
+
+Pour cette étude, nous avons reçu un fichier excel nommé Data_Biodiversity.xlsx. Ce dernier agrège en 4 feuilles, les données quantitatives et qualitatives mises à notre disposition dans le cadre d cet étude :
+
+-   data_espèces : nous y retrouvons, les détails concernant les différentes apparitions de céphalophes enrégistrées par les stations de collecte déployées sur les cinq villages ;
+-   data_stations : répertorie l'ensemble des installations de station sur le territoire. Cette feuille donne aussi, la nomenclature des noms des stations d'échantillonage, ainsi que des données importantes sur leur lieu d'implantation (relief, caractéristiques naturelles, distance aux routes, etc...)
+-   table_information : dictionnaire de données de la base Data_Biodiversity.xlsx
+-   autres_infos : s'y trouvent des informations importantes pour identifier les différentes espèces et la superficie des villages échantillonés.
+
+Data_Biodiversity.xlsx est propre, bien structuré, et ne contient pas de données manquantes au début de l'étude.
+
+## Préparation des données
+
+Nous avons commencé par explorer les librairies que nous pourrions utiliser dans le cadre de notre étude.
+
+
+
+Nous avons ensuite extrait les informations importantes de la base de données, en utilisant le package openxlsx. C'est celui qui offrait la meilleure flexibilité dans le choix des cellules à extraire de la base fournie.
+
+
+
+
+
+
+
+
+
+
+## Transformations opérées
+
+Au fil de l'appréciation des données fournies, nous avons remarqué quelques anomalies que nous avons dû corriger. Les voici.
+
+### Transformer les valeurs de la colone Heure_d'observation du dataframe data_espèces au format HH MM SS
+
+De base dans le dataframe, cette variable est de type charactères (chr), au format 12:38. Pour mieux l'exploiter, nous avons transformer la variable en datetime en utilisant le package lubridate.
+
+
+
+
+### Corriger l'erreur de nomenclature au niveau du nom des stations
+
+Un premier essai de fusion des bases de données data_espèces et data_stations en une base de donnée globale, a fait apparaitre 51 valeurs manquantes sur 07 variables.
+
+
+
+
+Dans la base crée, aucune données topographiques sur les stations du village de Molako n'était disponible. Une petite recherche a révélé une erreur de nomenclature dans le nomage des stations dans les deux bases de données :
+
+- dans la base data_espèce, les stations portent le nom Molako01A ;
+- dans la base data_stations, les stations portent le nom MolakoA01.
+
+Cette différente de pattern est à l'origine des données manquantes observées. Pour résoudre le problème, nous avons utilisé la fonction str_replace du package stringr.
+
+
+
+
+
+
+
+### Créer une variable moment de la journée pour distinguer le jour et la nuit
+
+Nous avons créé cette variable pour apprécier le comportement des cephalophes suivant leur heures d'observation.
+
+
+
+
+## Modélisations statistiques
+
+Nous avons créé à partir des données anthropiques, une variable composite de pression anthropique avec la méthode d'analyse statistique en composantes principales (ACP). Après avoir réalisé des régressions basées sur les distances qui ont été peu concluentes, nous avons opté pour cette méthode. En effet, c'est une méthode statistique très utile pour résumer plusieurs dimensions corrélées de la pression anthropique en un seul score synthétique, facilitant les modèles multivariés.
+
+Nous avons utilisé cette méthode pour créer deux catégories distinctes de variables composittes :
+
+- un score de pression anthropique, pour mesurer l'intensité de la pression anthropique à partir des distances des stations d'échantillonnage à l'activité humaine ;
+
+
+
+
+
+- un score de pression environnementale, qui combine pression anthropique et facteurs environnementaux (pente, indice MODIS) ;
+
+
+
+
+En faisant cela, nous créons non pas une seule, mais plusieurs variables composites qui représentent, selon les distances de base qui les composent, des facettes différentes des effets anthropiques et naturelles. 
+
+Nous avons enfin, entammé la phase exploratoire des données, à la découverte du dispositif d'étude, du territoire du bassin du Congo et de sa faune.
+
+
+<!--chapter:end:03-methodologie.Rmd-->
+
+# Résultats de l’analyse exploratoire et statistique
+
+Pour analyser l'impact de l'activité humaine sur la biodiversité dans le bassin du Congo, nous nous sommes basés sur des observations de 6 espèces de céphalophes. L'étude s'est déroulée durant plusieurs mois, et couvre la période du **17 Avril au 29 Septembre 2014**.
+
+
+## Abondance des céphalophes
+
+Commençons par évaluer l'étendue de la population de cephalophes sur le territoire à explorer.
+
+
+\begin{tabular}{l|r}
+\hline
+Espèces & Nombre\\
+\hline
+P. monticola & 1638\\
+\hline
+C. callipygus & 473\\
+\hline
+C. dorsalis & 254\\
+\hline
+C. silvicultor & 119\\
+\hline
+C. nigrifrons & 38\\
+\hline
+C. leucogaster & 23\\
+\hline
+\end{tabular}
+
+
+Tous les cinq villges confondus sur la période d'observation, le bassin du congo compte en tout 2545 céphalophes. La Philantomba monticola, plus connue sous le nom de Céphalophe bleu, est la plus répandue, avec 1638 représentations sur le territoire.
+
+
+![](Report_files/figure-latex/Plot_denombrement_02-1.pdf)<!-- --> 
+
+
+
+
+Le village Mapi, avec sa superficie de 586 km², est la région la plus peuplée. Le nombre de céphalophes dont elle regorde (979 individus) est loin devant celle de Molako, qui ne compte que 51 pour 10.4 km².
+
+
+![](Report_files/figure-latex/Plot_denombrement_04-1.pdf)<!-- --> 
+
+
+
+
+
+
+## Géographie du territoire
+
+
+
+
+Notre étude porte sur un territoire de 1733.1 km², répartis en cinq villages : Gonou, Lolam, Mapi, Sekom et Molako.
+
+### Dispositif de l'étude
+
+Le tableau suivant donne un aperçu du nombre total de stations globales (échantillonnées et non échantillonnées), du nombre de stations forestières, ainsi que du nombre de stations où des céphalophes ont été observés, par village.
+
+
+
+\begin{tabular}{l|r|r|r|r|r}
+\hline
+Site & Superficie & St. Totales & St. Cephalophes & St. Foretières & Amplitude de pente\\
+\hline
+Gonou & 282.7 & 75 & 63 & 64 & 16.66\\
+\hline
+Lolam & 690.0 & 47 & 32 & 47 & 21.33\\
+\hline
+Mapi & 586.0 & 51 & 46 & 38 & 9.23\\
+\hline
+Molako & 10.4 & 71 & 17 & 50 & 21.54\\
+\hline
+Sekom & 164.0 & 72 & 53 & 64 & 13.16\\
+\hline
+\end{tabular}
+
+
+Les villages Gonou, Sekom et Molako ont reçu le plus grand nombre de stations globales (respectivement 75, 72 et 71), tandis que Lolam en a le moins (47). Le village de Molako a 71 stations globales mais seulement 50 forestières, et un très faible nombre de stations avec céphalophes (17), ce qui pourrait indiquer une pression anthropique importante dans ce village.
+
+À l’inverse, Gonou et Sekom montrent une forte concordance entre stations forestières et présence de céphalophes (respectivement 75 contre 63 en forêt pour Gonou, 72 contre 64 en forêt pour Sekom), ce qui peut témoigner d’un environnement forestier encore relativement préservé.
+
+Cette distribution pourrait s'expliquer par l'amplitude de pente de ses villages, associés à leur couverture végétale. De plus, la forte densité de céphalophes dans ces zones pourrait refléter des conditions écologiques favorables à leur survie et à leur observation.
+
+Lolam par exemple, montre une couverture forestière de 100 % dans les sites d'installation, cavec une amplitude de pente également élevée.
+
+Le village de Mapi, où l'on dénombre le plus de céphalophes, est deuxième dans le classement en terme de superficie, juste derrière Lolam. Sa couverture végétale est excellente (environ 75%), et son relief est le moins accidenté (amplitude de pente de 9°).
+
+
+### Caractéristiques topographiques
+
+Pt. est une abbréviation de "Pente".
+
+
+\begin{tabular}{l|r|r|r|r|r}
+\hline
+Site & Pt. min & Pt. max & Pt. méd & Pt. moy & E. Type\\
+\hline
+Gonou & 0.79 & 17.45 & 5.12 & 5.71 & 3.58\\
+\hline
+Lolam & 1.48 & 22.82 & 13.15 & 11.38 & 5.07\\
+\hline
+Mapi & 0.11 & 9.33 & 4.10 & 3.78 & 2.03\\
+\hline
+Molako & 1.70 & 23.24 & 6.06 & 9.76 & 6.17\\
+\hline
+Sekom & 0.90 & 14.06 & 4.34 & 4.97 & 2.77\\
+\hline
+\end{tabular}
+
+
+
+Le village de Lolam a une topographie globalement plus pentue, avec une pente médiane (13.15°) et moyenne (11.38°) très élevées par rapport aux autres. Cela peut impacter l’accessibilité, la régénération forestière, voire la distribution des espèces. Le village de Molako est marqué par la plus forte variation des pentes (écart-type = 6.17), ce qui traduit un relief très hétérogène sur une aussi petite superficie. Le village de Mapi possède les pentes les plus faibles, ce qui pourrait indiquer une zone relativement plane, favorable à certaines espèces, voire à une activité anthropique plus marquée (agriculture, accès...).
+
+
+### Présence des céphalophes selon la dégradation et l'espèce
+
+
+\begin{tabular}{l|r|r|r|r}
+\hline
+Espèces & Degradée & Non\_degradée & Total & \%\_foret\_intacte\\
+\hline
+C. callipygus & 45 & 428 & 473 & 90.5\\
+\hline
+C. dorsalis & 12 & 242 & 254 & 95.3\\
+\hline
+C. leucogaster & 6 & 17 & 23 & 73.9\\
+\hline
+C. nigrifrons & 8 & 30 & 38 & 78.9\\
+\hline
+C. silvicultor & 5 & 114 & 119 & 95.8\\
+\hline
+P. monticola & 197 & 1441 & 1638 & 88.0\\
+\hline
+\end{tabular}
+
+
+La grande majorité des observations (89,3%) ont été faites en zones non dégradées, ce qui correspond à ce qu’on attend d’espèces strictement forestières. Cela confirme que les céphalophes étudiés sont majoritairement liés à des habitats forestiers préservés.
+Les données appuient l’idée que la déforestation et la dégradation des forêts affectent directement la distribution de la plupart des céphalophes.
+
+Les espèces les plus sensibles pourraient disparaître localement si la pression anthropique augmente. Ces données justifient des mesures de conservation ciblées, notamment dans les zones à forte densité de céphalophes forestiers.
+
+
+### Variation temporelle des déplacements des céphalophes
+
+La collecte des données sur les stations installées dans les cinq (05) villages, s’est déroulée sur la période du 17 avril 2014 au 29 septembre 2024. L’analyse des observations quotidiennes de céphalophes sur toute la période d’échantillonnage a permis de constater une nette augmentation du nombre d’observations à partir de la mi-mai, avec un pic entre juin et juillet, où les nombres quotidiens dépassent souvent 30, atteignant un maximum de 56 observations le 12 juin 2014.
+
+Ce pic peut s’expliquer par des facteurs saisonniers tels que l'accessibilité des sites, la disponibilité de ressources pour les animaux, ou encore une intensification de l’effort d’échantillonnage durant cette période. Les tout premiers jours d’avril montrent très peu d’observations, probablement en raison du démarrage progressif de l’opération d’échantillonnage ou des conditions environnementales peu propices. Il serait pertinent d’examiner si cette variation saisonnière est également corrélée à des changements de comportements chez les espèces ou à une modification des pressions anthropiques selon les mois (ex. : chasse saisonnière, activités agricoles, etc.).
+
+
+### Analyse par tranches horaires des passsages de céphalophes
+
+Le tableau ci-dessous présente la densité des actvités des différentes espèces de céphalophes sur les deux tranches horaires : le jour (6h à 18h) et la nuit (18h à 6h).
+
+
+
+\begin{tabular}{l|r|r|l}
+\hline
+Espèces & Activité 18h-6h & Activité 6h-18h & Rythme dominant\\
+\hline
+C. callipygus & 39 & 434 & Strictement diurne\\
+\hline
+C. dorsalis & 251 & 3 & Strictement nocturne\\
+\hline
+C. leucogaster & 3 & 20 & Diurne, avec un pic net\\
+\hline
+C. nigrifrons & 8 & 30 & Diurne, avec un pic net\\
+\hline
+C. silvicultor & 95 & 24 & Nocturne / crépusculaire\\
+\hline
+P. monticola & 42 & 1596 & Strictement diurne\\
+\hline
+\end{tabular}
+
+Le P. monticola est l’espèce la plus strictement diurne, avec une explosion d’activité en pleine journée. Par contre, le C. dorsalis et le C. silvicultor sont fortement nocturnes, évitant le jour presque totalement.
+
+Le C. callipygus est très actif le jour, mais conserve un petit pourcentage d’activité nocturne. Les C. leucogaster et C. nigrifrons ont des niveaux d’activité modérés, surtout en journée, mais leurs effectifs d’observation sont faibles.
+Ces premières analyses ont permis de mettre en évidence une variabilité importante des pressions anthropiques entre les stations, ainsi qu’une diversité variable des céphalophes selon le niveau de perturbation. Afin d’aller plus loin dans la compréhension de cette relation, une approche par classification non supervisée, puis par modélisation prédictive, sera mobilisée dans la section suivante.
+
+
+
+## Effets environnementaux et anthropiques
+
+Nous tâcherons d'expliquer l'abondance des cephalophes avec d'une part les variables anthropiques (originales et composites) et d'autre part, les variables environnementales globales.
+
+
+
+Nous avons plus haut, créer deux groupes de variables composites.
+
+### Groupe A - 3 variables composites, qui chacune représente une facette d'interprétation de la pression anthropique.
+
+* Utiliser PC1 (pression_humaine_globale) - Pression humaine globale (proximité des villages et des camps de chasse)
+* Utiliser PC2 (gradient_route_eau) - Gradiant route vs eau (proximité aux routes et aux points d'eau)
+* Utiliser PC3 (accessibilite_chasse_traditionnelle) - Accessibilité (proximité route, camp_de_chasse, eau)
+
+
+### Groupe B - 4 variables composites, qui chacune représente une facette d'interprétation de la pression environnementale.
+
+* Utiliser PC1 (pression_environnementale_globale) - Pression environnementale globale (proximité des villages et des camps de chasse)
+* Utiliser PC2 (gradiant_ecologique) - Gradiant écologique (Proximité eau, Pente, MODIS_Degradation)
+* Utiliser PC3 (contraste_zone_accessible_degradee) - Accessibilité de la zone (Proximité route, Pente, MODIS_Degradation)
+* Utiliser PC4 (accessibilite_point_eau) - Accessibilité (Route, eau, pente)
+
+
+### H1 . Plus la pression anthropique est forte, moins on rencontre les céphalophes.
+
+
+L'Objectif ici est de mesurer l'effet global de l'anthropisation sur les espèces de cephalophes.
+
+
+```
+## 
+## Call:
+## glm(formula = Nombre_total_cephalophes ~ pression_humaine_globale, 
+##     family = poisson, data = dath1)
+## 
+## Coefficients:
+##                          Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)               2.37266    0.02539  93.434   <2e-16 ***
+## pression_humaine_globale -0.35569    0.04118  -8.637   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 2950.4  on 210  degrees of freedom
+## Residual deviance: 2849.9  on 209  degrees of freedom
+## AIC: 3638
+## 
+## Number of Fisher Scoring iterations: 5
+```
+A travers ces résultats, l'hypothèse H1 est vailde et significative. La pression humaine globale a un effet significatif (p = 2e-16 < 0.05) sur le nombre total de céphalophes, avec un effet négatif : lorsque la pression humaine augmente d'une unité, le nombre de céphalophes diminue de 35.57%.
+
+### H2 . L’effet de la pression humaine est modulé par les caractéristiques naturelles du territoire (relief, végétation, accessibilité aux ressources).
+
+
+L'Objectif ici est de mesurer les interactions entre variables naturelles et humaines.
+
+
+```
+## 
+## Call:
+## glm(formula = Nombre_total_cephalophes ~ gradiant_ecologique, 
+##     family = poisson, data = dath1)
+## 
+## Coefficients:
+##                     Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)          2.49394    0.01984 125.709  < 2e-16 ***
+## gradiant_ecologique -0.06175    0.02160  -2.859  0.00425 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 2950.4  on 210  degrees of freedom
+## Residual deviance: 2942.4  on 209  degrees of freedom
+## AIC: 3730.5
+## 
+## Number of Fisher Scoring iterations: 5
+```
+
+À travers ces résultats, l'hypothèse H2 est valide et significative. Le gradient écologique a un effet significatif (p = 0.00425 < 0.05) sur le nombre total de céphalophes, avec un effet négatif : lorsque le gradient écologique (Proximité eau, Pente, MODIS_Degradation) augmente d'une unité, le nombre de céphalophes diminue de 6.18%.
+
+Ce phénomène indique que certaines caractéristiques naturelles qui composent le gradient écologique influencent la façon dont la pression humaine impacte les céphalophes. L'effet négatif observé pourrait refléter une interaction entre ces deux facteurs, où un environnement plus riche (avec un gradient écologique plus élevé) pourrait être plus vulnérable à l'impact négatif de la pression humaine.
+
+
+### H3 . Les effets observés sont significativement variables d'un village à l'autre.
+
+
+
+
+```
+## Linear mixed model fit by REML ['lmerMod']
+## Formula: Nombre_total_cephalophes ~ pression_humaine_globale + gradiant_ecologique +  
+##     (1 | Villages)
+##    Data: dath1
+## 
+## REML criterion at convergence: 1717.9
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -1.4186 -0.5508 -0.1983  0.1992  5.5123 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  Villages (Intercept)  48.17    6.941  
+##  Residual             201.39   14.191  
+## Number of obs: 211, groups:  Villages, 5
+## 
+## Fixed effects:
+##                          Estimate Std. Error t value
+## (Intercept)               10.5283     3.2908   3.199
+## pression_humaine_globale  -2.1217     1.3912  -1.525
+## gradiant_ecologique        0.6614     1.2356   0.535
+## 
+## Correlation of Fixed Effects:
+##             (Intr) prss__
+## prssn_hmn_g  0.063       
+## gradnt_clgq -0.023 -0.005
+```
+
+
+L'effet du gradient écologique est aussi positif, mais il n'est pas statistiquement significatif (valeur t = 0.535). Cela suggère que, bien que le gradient écologique puisse avoir un effet sur le nombre de céphalophes, cet effet n'est pas assez fort ou fiable pour être retenu dans ce modèle.
+
+Aucun des effets fixes (pression humaine et gradient écologique) n'est statistiquement significatif. Les villages semblent avoir un impact significatif sur le nombre de céphalophes, ce qui est représenté par la variance des effets aléatoires. Cela pourrait suggérer que, dans ce modèle spécifique, la pression humaine et le gradient écologique n'ont pas d'effet suffisamment fort ou direct sur le nombre de céphalophes, et que les différences entre villages sont plus importantes dans l'explication de la variabilité du nombre de céphalophes.
+
+
+
+
+<!--chapter:end:04-resultats.Rmd-->
+
+# Discussions
+
+Les résultats obtenus dans cette étude permettent de tirer des conclusions concernant les trois hypothèses formulées sur l'impact de la pression humaine, des caractéristiques naturelles du territoire, et des différences inter-villages sur le nombre de céphalophes.
+
+Hypothèse 1 : Plus la pression anthropique est forte, moins les céphalophes sont détectés, en fréquence et en abondance.
+
+Les résultats montrent une relation négative entre la pression humaine et le nombre de céphalophes, bien que cet effet ne soit pas significatif dans le modèle linéaire mixte. En d'autres termes, bien que la pression humaine semble avoir un impact négatif sur la population de céphalophes, cette relation n'est pas confirmée de manière statistiquement robuste. Cela pourrait indiquer que la pression humaine n'a pas l'effet anticipé sur la détection ou l'abondance des céphalophes, ou que d'autres facteurs non mesurés influencent ces résultats.
+
+Hypothèse 2 : L’effet de la pression humaine est modulé par les caractéristiques naturelles du site (relief, végétation, accessibilité aux ressources).
+
+L'hypothèse selon laquelle la pression humaine serait modulée par des caractéristiques naturelles du territoire n'est pas soutenue par les résultats. Les variables liées au gradient écologique et aux caractéristiques naturelles du territoire ne montrent pas d'effet significatif sur le nombre de céphalophes. Cela suggère que, dans cette analyse, les caractéristiques naturelles n'ont pas un rôle de modulation fort sur l'impact de la pression humaine. Il se pourrait que d'autres éléments contextuels ou des interactions complexes ne soient pas pris en compte dans le modèle.
+
+Hypothèse 3 : Les effets observés sont significativement variables d'un village à l'autre.
+
+Cette hypothèse est partiellement confirmée. L'effet aléatoire lié aux différences entre villages est statistiquement significatif, ce qui indique que le nombre de céphalophes varie effectivement de manière significative d'un village à l'autre. Cela suggère que des facteurs locaux spécifiques, tels que le relief, la végétation ou l'accessibilité aux ressources, influencent probablement la population de céphalophes de manière différente dans chaque village.
+
+<!--chapter:end:05-discussions.Rmd-->
+
+# Conclusion
+
+Les résultats obtenus confirment l’effet négatif de la pression humaine sur la présence des céphalophes, en cohérence avec les hypothèses initiales. Les résultats montrent que les stations proches des villages, routes, et camps de chasse présentent une diversité spécifique plus faible et une abondance réduite des céphalophes, confirmant l'hypothèse selon laquelle la dégradation de l'habitat due aux pressions anthropiques impacte négativement ces espèces. L'espèce P. monticola se distingue comme la plus abondante, tandis que d'autres espèces plus rares, telles que C. leucogaster et C. nigrifrons, semblent être particulièrement vulnérables à ces perturbations.
+
+Toutefois, si le rôle protecteur attendu de la couverture végétale dense apparaît dans certains cas, il demeure difficile à généraliser à l’ensemble des villages étudiés. En effet, des localités présentant une faible pression humaine affichent néanmoins des densités très faibles de céphalophes, ce qui suggère l’intervention d’autres facteurs, potentiellement liés à l’histoire d’usage du territoire ou à des caractéristiques écologiques locales non mesurées. Les comparaisons inter-villages mettent en lumière une variabilité marquée, que des études antérieures, notamment celles de van Vliet et al. sur la chasse et la fragmentation forestière, permettent en partie d’éclairer. Par ailleurs, l’influence des infrastructures telles que les routes, les villages ou les camps de chasse se révèle particulièrement forte, confirmant leur rôle structurant dans la dynamique de la faune et la fragmentation des habitats.
+
+La variation temporelle des observations indique une influence saisonnière potentielle sur les comportements des céphalophes, qui pourrait être liée aux changements de conditions écologiques ou aux variations dans l'intensité des pressions humaines. De plus, l'analyse topographique et la distribution géographique des stations révèlent des liens étroits entre la qualité de l'habitat et la présence de ces animaux, avec des zones plus favorables à leur survie situées loin des impacts directs de l'homme.
+
+Cette étude fournit des éléments empiriques importants pour les politiques de conservation, en soulignant la nécessité de renforcer les efforts de préservation dans les zones encore relativement intacts et de mettre en place des stratégies adaptées pour minimiser les effets des pressions anthropiques sur ces espèces. La gestion durable de la faune du Bassin du Congo devra intégrer ces considérations pour assurer la conservation à long terme de cette biodiversité unique.
+
+
+
+<!--chapter:end:06-conclusion.Rmd-->
+

@@ -1,6 +1,40 @@
 # L'introduction
 
-Les céphalophes sont des petits bovidés forestiers discrets, mais essentiels au fonctionnement des écosystèmes tropicaux. Leur présence et leur abondance sont influencées par de nombreux facteurs environnementaux et anthropiques, souvent complexes à démêler. Dans un contexte de fragmentation croissante des habitats et de pressions humaines accrues, comprendre les préférences écologiques de ces espèces devient crucial pour orienter efficacement les efforts de conservation.
+La biodiversité du Bassin du Congo représente l'une des plus grandes richesses naturelles de la planète. Elle abrite une variété d'écosystèmes forestiers exceptionnels et constitue un réservoir inestimable de faune et de flore. Cependant, cette biodiversité est aujourd'hui soumise à de fortes pressions anthropiques, notamment l'exploitation forestière, la chasse, l'agriculture itinérante et l'extension des infrastructures humaines. Ces activités humaines modifient les habitats naturels, compromettent la survie des espèces et menacent l'équilibre écologique de la région.
 
-Cette étude s’appuie sur des relevés de pièges photographiques menés dans une aire protégée de l’Afrique de l’Ouest. Elle vise à évaluer l’influence de variables environnementales telles que l’altitude, la couverture forestière et la proximité des activités humaines sur l’abondance de trois espèces de céphalophes : Cephalophus dorsalis, Cephalophus silvicultor et Philantomba maxwellii. En identifiant les préférences spécifiques de chaque espèce, l’étude apporte des éléments concrets pour mieux planifier la gestion des habitats forestiers.
+
+Ce thème d’étude propose d'analyser l'impact de ces pressions anthropiques sur la biodiversité, en se concentrant sur les céphalophes, un groupe d'espèces de petits antilopidés qui jouent un rôle écologique important dans les forêts du Bassin du Congo.
+
+
+## La problématique
+
+Malgré leur importance écologique, les céphalophes sont particulièrement vulnérables à la dégradation de leur habitat naturel. Les activités humaines telles que la déforestation, la chasse commerciale et la fragmentation des forêts réduisent la disponibilité en ressources et perturbent leurs comportements. Or, les études quantitatives permettant de relier ces pressions à des indicateurs de biodiversité tels que la diversité de l’espèce ou l'abondance sont encore rares dans cette région.
+
+La question centrale de cette étude est donc la suivante : dans quelle mesure les variables environnementales et anthropiques influencent-elles la diversité et l’abondance des céphalophes dans le Bassin du Congo ?
+
+
+## Objectifs 
+
+L'objectif général de cette étude est donc de comprendre de façon précise, les facteurs qui influencent l’abondance des céphalophes dans le bassin du Congo.
+
+De façon spécifique, nous devrons :
+
+* Comparer l’abondance des espèces de céphalophes selon les villages
+* Identifier les facteurs géographiques clés liés à ces différences
+* Mesurer l'impact environnemental sur les céphalophes du bassin du Congo
+
+
+## Hypothèses
+
+
+Voici 3 hypothèses que nous posons à cet effet :
+
+Hypothèse 1 : Plus la pression anthropique est forte, moins les céphalophes sont détectés, en fréquence et en abondance.
+
+Hypothèse 2 : L’effet de la pression humaine est modulé par les caractéristiques naturelles du site (relief, végétation, accessibilité aux ressources).
+
+Hypothèse 3 : Les effets observés sont significativement variables d'un village à l'autre.
+
+
+À partir de données collectées sur plusieurs stations d'échantillonnage installées dans cinq (05) villages, à savoir : Gonou, Lolam, Molako, Mapi et Sekom, nous analyserons les facteurs environnementaux et les pressions humaines qui influencent la biodiversité (richesse des espèces) et l'abondance de ces espèces. 
 

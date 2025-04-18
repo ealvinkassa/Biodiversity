@@ -3,100 +3,177 @@
 Pour analyser l'impact de l'activité humaine sur la biodiversité dans le bassin du Congo, nous nous sommes basés sur des observations de 6 espèces de céphalophes. L'étude s'est déroulée durant plusieurs mois, et couvre la période du **17 Avril au 29 Septembre 2014**.
 
 
-## Géographie du territoire
+## Abondance des céphalophes
 
-```{r Transformer_etape_5, echo=FALSE, include=FALSE}
+Commençons par évaluer l'étendue de la population de cephalophes sur le territoire à explorer.
 
-# Compiler toutes les données de géographie
+```{r Denombrement_01, echo=FALSE}
 
+#1. Le nombre total de céphalophes par type
 
-geographie <- geographie %>%
-  left_join(all_data %>%
-              group_by(Villages) %>%
-              summarise(
-                Pente_min = min(Pente, na.rm = TRUE),
-                Pente_max = max(Pente, na.rm = TRUE),
-                Pente_med = median(Pente, na.rm = TRUE),
-                Pente_mean = mean(Pente, na.rm = TRUE),
-                Amplitude = Pente_max - Pente_min,
-                Pente_sd = sd(Pente, na.rm = TRUE),
-                Pente_cv = Pente_sd / Pente_mean
-              ),
-             by = c("Site" = "Villages")) %>%
-  left_join(
-    stations,
-    by = c("Site" = "Villages")) %>%
-  left_join(
-    data_stations %>%
-      filter(MODIS_Degradation == 1 & Stations_globales %in% unique(data_especes$`Stations_d'échantillonnage`)) %>%
-      group_by(Villages) %>%
-      summarise(
-        Nb_Station_Forestiere_Cephalophes = n(),
-      ),
-    by = c("Site" = "Villages")) %>%
- mutate(
-    Couverture_Foret_Globale = (Nb_Station_Forestiere/Nb_Station_Globales),
-    Couverture_Foret_Cephalophes = (Nb_Station_Forestiere_Cephalophes/Nb_Station_Cephalophes)
-  )
+total_cephalophes_par_type <- data_especes %>%
+  group_by(Espèces) %>%
+  summarise(Nombre_total_cephalophes = n(), .groups = "drop") %>%
+  arrange(desc(Nombre_total_cephalophes))
 
-print(geographie)
+t_cel_e <- total_cephalophes_par_type %>%
+  rename(Nombre = Nombre_total_cephalophes)
 
-#Etape 1 . Inverser les distances en proximité
-
-data_stations <- data_stations %>%
-  mutate(
-    Proximite_village = 1/(Distance_Village + 1), # +1 pour éviter la division par zéro
-    Proximite_route = 1/(Distance_Route + 1),
-    Proximite_eau = 1/(Distance_eau + 1),
-    Proximite_camp_de_chasse = 1/(Distance_camp_de_chasse + 1)
-  )
-
-#Etape 2 . Standardiser les variables
-
-arc <- scale(
-  data_stations[, c(
-    "Proximite_village",
-    "Proximite_route",
-    "Proximite_eau",
-    "Proximite_camp_de_chasse"
-  )])                                                                                        
-
-#Etape 3 . Créer la variable composite
-
-acp_arc <- prcomp(arc, center = TRUE, scale. = TRUE)
-summary(acp_arc) #Les 3 premières composantes résument 86,9 % de la variance totale
-
-
-#Etape 4 . Créer la variable synthétique
-
-# Récupérer les scores des 3 premières variables composantes de l'acp
-
-scores_arc <- acp_arc$x[, 1:3]
-
-# Afficher les coefficients (loadings) de l'acp, pour comprendre la contribution
-#de chaque variable corresponsante
-
-loadings_arc <- acp_arc$rotation
-round(loadings_arc[, 1:3], 3)  # Pour PC1 à PC3
-
-
-#Ajouter les 03 variables au jeu de données
-
-
-data_stations <- cbind(
-  data_stations,
-  pression_humaine_globale = scores_arc[, 1],
-  gradient_route_eau = scores_arc[, 2],
-  accessibilite_chasse_traditionnelle = scores_arc[, 3]
+knitr::kable(
+  t_cel_e
 )
 
 ```
 
 
-- un score de pression environnementale, qui combine pression anthropique et facteurs environnementaux (pente, indice MODIS) ;
+Tous les cinq villges confondus sur la période d'observation, le bassin du congo compte en tout `r sum(t_cel$Nombre)` céphalophes. La Philantomba monticola, plus connue sous le nom de Céphalophe bleu, est la plus répandue, avec `r t_cel$Nombre[1]` représentations sur le territoire.
 
 
-```{r géographie, echo=TRUE, include=TRUE}
+```{r Plot_denombrement_02, echo=FALSE}
+
+ggplot(t_cel_e, aes(x = Nombre, y = reorder(Espèces, Nombre))) +
+  geom_bar(stat = "identity", fill = "black") +
+  labs(
+    title = "Histogramme de l’abondance par espèces",
+    x = "Nombre de céphalophes",
+    y = "Espèces"
+  ) +
+  theme_minimal()
+
+``` 
+
+
+```{r Denombrement_03, echo=FALSE, include=FALSE}
+
+#2. Le nombre total de céphalophes observées par village
+
+total_cephalophes_par_village <- data_especes %>%
+  group_by(Villages) %>%
+  summarise(Nombre_total_cephalophes = n(), .groups = "drop")  %>%
+  arrange(desc(Nombre_total_cephalophes))
+
+t_cel_v <- total_cephalophes_par_village %>%
+  rename(Nombre = Nombre_total_cephalophes)
+
+knitr::kable(
+  t_cel_v)
+
+
+superficie_mapi <- geographie %>%
+  filter(Site == "Mapi") %>%
+  pull(Superficie)
+
+superficie_molako <- geographie %>%
+  filter(Site == "Molako") %>%
+  pull(Superficie)
+
+
+```
+
+Le village Mapi, avec sa superficie de `r superficie_mapi` km², est la région la plus peuplée. Le nombre de céphalophes dont elle regorde (`r t_cel_v$Nombre[1]` individus) est loin devant celle de Molako, qui ne compte que `r t_cel_v$Nombre[5]` pour `r superficie_molako` km².
+
+
+```{r Plot_denombrement_04, echo=FALSE}
+
+ggplot(t_cel_v, aes(x = Nombre, y = reorder(Villages, Nombre))) +
+  geom_bar(stat = "identity", fill = "black") +
+  labs(
+    title = "Histogramme de l’abondance par village",
+    x = "Nombre de céphalophes",
+    y = "Village"
+  ) +
+  theme_minimal()
+
+``` 
+
+
+```{r Denombrement_04, echo=FALSE}
+
+#3. Le nombre total de cephalophes par stations
+
+total_cephalophes_par_station <- data_especes %>%
+  group_by(`Stations_d'échantillonnage`, Villages) %>%
+  summarise(Nombre_total_cephalophes = n(), .groups = "drop")
+
+
+#4. Le nombre total de cephalophes par MODIS Degradation
+
+total_cephalophes_par_modis <- all_data %>%
+  group_by(MODIS_Degradation) %>%
+  summarise(Nombre_cephalophes = n(), .groups = "drop")
+
+
+#5. Le nombre total de cephalophes par moment de la journée
+
+total_cephalophes_par_moment_journee <- all_data %>%
+  group_by(Moment_journee) %>%
+  summarise(Nombre_cephalophes = n(), .groups = "drop")
+
+
+#6. Le nombre total de cephalophes par date d'observation
+
+total_cephalophes_par_date <- data_especes %>%
+  group_by(`Dates_d'échantillonnage`) %>%
+  summarise(Nombre_total_cephalophes = n(), .groups = "drop")
+
+
+#7. Le nombre total de cephalophes par espèce par moment de la journée
+
+total_cephalophes_par_type_moment_journee <- all_data %>%
+  group_by(Espèces, Moment_journee) %>%
+  summarise(Nombre_cephalophes = n(), .groups = "drop")
+
+
+#8. Le nombre total de cephalophes par village par moment de la journée
+
+total_cephalophes_par_village_moment_journee <- all_data %>%
+  group_by(Villages, Moment_journee) %>%
+  summarise(Nombre_cephalophes = n(), .groups = "drop")
+
+
+#9. Le nombre total de cephalophes par type et MODIS Degradation
+
+total_cephalophes_par_type_modis <- all_data %>%
+  group_by(Espèces, MODIS_Degradation) %>%
+  summarise(Nombre_observations = n(), .groups = "drop")
+
+
+#10. Le nombre de céphalophes observées par type et villages
+
+total_cephalophes_par_type_villages <- data_especes %>%
+  group_by(Espèces, Villages) %>%
+  summarise(Nombre_observations = n(), .groups = "drop")
+
+
+#11. Le de cephalophes par type et par station
+
+total_cephalophes_par_type_station <- data_especes %>%
+  group_by(`Stations_d'échantillonnage`, Espèces) %>%
+  summarise(Nombre_observations = n(), .groups = "drop")
+
+
+#12. Le nombre de céphalophes observées par type et villages
+
+total_cephalophes_par_type_villages <- data_especes %>%
+  group_by(Villages, Espèces) %>%
+  summarise(Nombre_observations = n(), .groups = "drop") %>%
+  arrange(Villages, desc(Nombre_observations))
+
+
+#13. Richesse de la variété de cephalophes par territoire
+
+richesse_par_stations <- data_especes %>%
+  group_by(`Stations_d'échantillonnage`) %>%
+  summarise(Richesse = n_distinct(Espèces))
+
+```
+
+
+
+## Géographie du territoire
+
+
+```{r Geographie_05, echo=FALSE}
 
 #1. Le nombre de stations d'échantillonnage par villages
 
@@ -129,14 +206,304 @@ stations <- total_stations_par_village %>%
   left_join(total_stations_cephalophes,
             by = "Villages")
 
+#5. Compiler dans un seul tableau
+
+geographie <- read.xlsx(
+  "C:/Users/HP/OneDrive - gouvbj/MVDC/Cours/Projects/Biodiversity/data/raw/Data_Biodiversity.xlsx",
+  sheet = 4,
+  startRow = 10,
+  row = c(10:15),
+  colNames = TRUE,
+  rowNames = FALSE,
+  detectDates = TRUE,
+  sep.names = "_",
+  na.strings = "NA")  %>%
+  rename(Superficie = `Taille_du_territoire_échantillonné_(km²)`) %>%
+  left_join(all_data %>%
+              group_by(Villages) %>%
+              summarise(
+                Pente_min = min(Pente, na.rm = TRUE),
+                Pente_max = max(Pente, na.rm = TRUE),
+                Pente_med = median(Pente, na.rm = TRUE),
+                Pente_mean = mean(Pente, na.rm = TRUE),
+                Amplitude = Pente_max - Pente_min,
+                Pente_sd = sd(Pente, na.rm = TRUE),
+                Pente_cv = Pente_sd / Pente_mean
+              ),
+             by = c("Site" = "Villages")) %>%
+  left_join(
+    stations,
+    by = c("Site" = "Villages")) %>%
+  left_join(
+    data_stations %>%
+      filter(MODIS_Degradation == 1 & Stations_globales %in% unique(data_especes$`Stations_d'échantillonnage`)) %>%
+      group_by(Villages) %>%
+      summarise(
+        Nb_Station_Forestiere_Cephalophes = n(),
+      ),
+    by = c("Site" = "Villages")) %>%
+ mutate(
+    Couverture_Foret_Globale = (Nb_Station_Forestiere/Nb_Station_Globales),
+    Couverture_Foret_Cephalophes = (Nb_Station_Forestiere_Cephalophes/Nb_Station_Cephalophes)
+  )
+
+```
+
+Notre étude porte sur un territoire de `r sum(geographie$Superficie)` km², répartis en cinq villages : Gonou, Lolam, Mapi, Sekom et Molako.
+
+### Dispositif de l'étude
+
+Le tableau suivant donne un aperçu du nombre total de stations globales (échantillonnées et non échantillonnées), du nombre de stations forestières, ainsi que du nombre de stations où des céphalophes ont été observés, par village.
+
+
+```{r Denombrement_05, echo=FALSE}
+
+#3. Le nombre total de stations déployées par village
+
+stat_desc <- geographie %>%
+  select(
+    Site,
+    Superficie,
+    "St. Totales" = Nb_Station_Globales,
+    "St. Cephalophes" = Nb_Station_Cephalophes,
+    "St. Foretières" = Nb_Station_Forestiere,
+    "Amplitude de pente" = Amplitude) %>%
+  mutate(across(
+    .cols = where(is.numeric),
+    .fns = ~ round(.x, 2)
+  )) %>%
+  arrange(Site)
+
+knitr::kable(
+  stat_desc
+  )
 
 ```
 
 
-Le territoire sujet de l'étude est composé de cinq villages : Gonou,
+Les villages Gonou, Sekom et Molako ont reçu le plus grand nombre de stations globales (respectivement 75, 72 et 71), tandis que Lolam en a le moins (47). Le village de Molako a 71 stations globales mais seulement 50 forestières, et un très faible nombre de stations avec céphalophes (17), ce qui pourrait indiquer une pression anthropique importante dans ce village.
+
+À l’inverse, Gonou et Sekom montrent une forte concordance entre stations forestières et présence de céphalophes (respectivement 75 contre 63 en forêt pour Gonou, 72 contre 64 en forêt pour Sekom), ce qui peut témoigner d’un environnement forestier encore relativement préservé.
+
+Cette distribution pourrait s'expliquer par l'amplitude de pente de ses villages, associés à leur couverture végétale. De plus, la forte densité de céphalophes dans ces zones pourrait refléter des conditions écologiques favorables à leur survie et à leur observation.
+
+Lolam par exemple, montre une couverture forestière de 100 % dans les sites d'installation, cavec une amplitude de pente également élevée.
+
+Le village de Mapi, où l'on dénombre le plus de céphalophes, est deuxième dans le classement en terme de superficie, juste derrière Lolam. Sa couverture végétale est excellente (environ 75%), et son relief est le moins accidenté (amplitude de pente de 9°).
+
+
+### Caractéristiques topographiques
+
+Pt. est une abbréviation de "Pente".
+
+```{r Denombrement_06, echo=FALSE}
+
+#3. Le nombre total de stations déployées par village
+
+topograph <- geographie %>%
+  select(
+    Site,
+    "Pt. min" = Pente_min,
+    "Pt. max" = Pente_max,
+    "Pt. méd" = Pente_med,
+    "Pt. moy" = Pente_mean,
+    "E. Type" = Pente_sd) %>%
+  mutate(across(
+    .cols = where(is.numeric),
+    .fns = ~ round(.x, 2)
+  )) %>%
+  arrange(Site)
+
+knitr::kable(
+  topograph
+  )
+
+```
 
 
 
-## Citations
+Le village de Lolam a une topographie globalement plus pentue, avec une pente médiane (13.15°) et moyenne (11.38°) très élevées par rapport aux autres. Cela peut impacter l’accessibilité, la régénération forestière, voire la distribution des espèces. Le village de Molako est marqué par la plus forte variation des pentes (écart-type = 6.17), ce qui traduit un relief très hétérogène sur une aussi petite superficie. Le village de Mapi possède les pentes les plus faibles, ce qui pourrait indiquer une zone relativement plane, favorable à certaines espèces, voire à une activité anthropique plus marquée (agriculture, accès...).
+
+
+### Présence des céphalophes selon la dégradation et l'espèce
+
+```{r Denombrement_07, echo=FALSE}
+
+#4. Le nombre total de céphalophes par type par modis
+
+total_cephalophes_par_type_modis <- all_data %>%
+  group_by(`Espèces`, MODIS_Degradation) %>%
+  summarise(Observations = n(), .groups = "drop") %>%
+  pivot_wider(names_from = MODIS_Degradation,
+              values_from = Observations,
+              values_fill = 0,
+              names_prefix = "Zone_") %>%
+  rename(
+    Degradée = Zone_0,
+    Non_degradée = Zone_1
+  ) %>%
+  mutate(
+    Total = Degradée + Non_degradée,
+    `%_foret_intacte` = round((Non_degradée / Total) * 100, 1)
+  )
+
+knitr::kable(
+  total_cephalophes_par_type_modis
+  )
+
+```
+
+
+La grande majorité des observations (89,3%) ont été faites en zones non dégradées, ce qui correspond à ce qu’on attend d’espèces strictement forestières. Cela confirme que les céphalophes étudiés sont majoritairement liés à des habitats forestiers préservés.
+Les données appuient l’idée que la déforestation et la dégradation des forêts affectent directement la distribution de la plupart des céphalophes.
+
+Les espèces les plus sensibles pourraient disparaître localement si la pression anthropique augmente. Ces données justifient des mesures de conservation ciblées, notamment dans les zones à forte densité de céphalophes forestiers.
+
+
+### Variation temporelle des déplacements des céphalophes
+
+La collecte des données sur les stations installées dans les cinq (05) villages, s’est déroulée sur la période du 17 avril 2014 au 29 septembre 2024. L’analyse des observations quotidiennes de céphalophes sur toute la période d’échantillonnage a permis de constater une nette augmentation du nombre d’observations à partir de la mi-mai, avec un pic entre juin et juillet, où les nombres quotidiens dépassent souvent 30, atteignant un maximum de 56 observations le 12 juin 2014.
+
+Ce pic peut s’expliquer par des facteurs saisonniers tels que l'accessibilité des sites, la disponibilité de ressources pour les animaux, ou encore une intensification de l’effort d’échantillonnage durant cette période. Les tout premiers jours d’avril montrent très peu d’observations, probablement en raison du démarrage progressif de l’opération d’échantillonnage ou des conditions environnementales peu propices. Il serait pertinent d’examiner si cette variation saisonnière est également corrélée à des changements de comportements chez les espèces ou à une modification des pressions anthropiques selon les mois (ex. : chasse saisonnière, activités agricoles, etc.).
+
+
+### Analyse par tranches horaires des passsages de céphalophes
+
+Le tableau ci-dessous présente la densité des actvités des différentes espèces de céphalophes sur les deux tranches horaires : le jour (6h à 18h) et la nuit (18h à 6h).
+
+
+```{r Denombrement_08, echo=FALSE}
+
+#3. Le nombre total de stations déployées par village
+
+
+rythme <- all_data %>%
+  group_by(`Espèces`, Moment_journee) %>%
+  summarise(Nombre_cephalophes = n(), .groups = "drop") %>%
+  pivot_wider(
+    names_from = Moment_journee,
+    values_from = Nombre_cephalophes,
+    values_fill = 0
+  ) %>%
+  rename(
+    "Activité 18h-6h" = nuit,
+    "Activité 6h-18h" = jour
+  ) %>%
+  mutate(
+    Total = `Activité 18h-6h` + `Activité 6h-18h`,
+    `% de présence en forêt intacte` = round((`Activité 6h-18h` / Total) * 100, 1),
+    `Rythme dominant` = case_when(
+      `Activité 18h-6h` > 0.9 * Total ~ "Strictement nocturne",
+      `Activité 6h-18h` > 0.9 * Total ~ "Strictement diurne",
+      `Activité 18h-6h` > `Activité 6h-18h` ~ "Nocturne / crépusculaire",
+      `Activité 6h-18h` > 2 * `Activité 18h-6h` ~ "Diurne, avec un pic net",
+      `Activité 6h-18h` > `Activité 18h-6h` ~ "Majoritairement diurne",
+      TRUE ~ "Faiblement diurne"
+    )
+  ) %>%
+  select(`Espèces`, `Activité 18h-6h`, `Activité 6h-18h`, `Rythme dominant`)
+
+# Affichage
+knitr::kable(
+  rythme
+  )
+
+```
+
+Le P. monticola est l’espèce la plus strictement diurne, avec une explosion d’activité en pleine journée. Par contre, le C. dorsalis et le C. silvicultor sont fortement nocturnes, évitant le jour presque totalement.
+
+Le C. callipygus est très actif le jour, mais conserve un petit pourcentage d’activité nocturne. Les C. leucogaster et C. nigrifrons ont des niveaux d’activité modérés, surtout en journée, mais leurs effectifs d’observation sont faibles.
+Ces premières analyses ont permis de mettre en évidence une variabilité importante des pressions anthropiques entre les stations, ainsi qu’une diversité variable des céphalophes selon le niveau de perturbation. Afin d’aller plus loin dans la compréhension de cette relation, une approche par classification non supervisée, puis par modélisation prédictive, sera mobilisée dans la section suivante.
+
+
+
+## Effets environnementaux et anthropiques
+
+Nous tâcherons d'expliquer l'abondance des cephalophes avec d'une part les variables anthropiques (originales et composites) et d'autre part, les variables environnementales globales.
+
+```{r Analyse_04, echo=FALSE, include=FALSE}
+
+dath1 <- total_cephalophes_par_station %>%
+  left_join(
+    data_stations %>%
+      select(-Villages,
+             -Numero_de_la_station
+      ),
+    by = c("Stations_d'échantillonnage" = "Stations_globales"))
+
+
+dath2 <- total_cephalophes_par_type_station %>%
+  left_join(
+    data_stations %>%
+      select(-Villages,
+             -Numero_de_la_station
+      ),
+    by = c("Stations_d'échantillonnage" = "Stations_globales"))
+
+```
+
+Nous avons plus haut, créer deux groupes de variables composites.
+
+### Groupe A - 3 variables composites, qui chacune représente une facette d'interprétation de la pression anthropique.
+
+* Utiliser PC1 (pression_humaine_globale) - Pression humaine globale (proximité des villages et des camps de chasse)
+* Utiliser PC2 (gradient_route_eau) - Gradiant route vs eau (proximité aux routes et aux points d'eau)
+* Utiliser PC3 (accessibilite_chasse_traditionnelle) - Accessibilité (proximité route, camp_de_chasse, eau)
+
+
+### Groupe B - 4 variables composites, qui chacune représente une facette d'interprétation de la pression environnementale.
+
+* Utiliser PC1 (pression_environnementale_globale) - Pression environnementale globale (proximité des villages et des camps de chasse)
+* Utiliser PC2 (gradiant_ecologique) - Gradiant écologique (Proximité eau, Pente, MODIS_Degradation)
+* Utiliser PC3 (contraste_zone_accessible_degradee) - Accessibilité de la zone (Proximité route, Pente, MODIS_Degradation)
+* Utiliser PC4 (accessibilite_point_eau) - Accessibilité (Route, eau, pente)
+
+
+### H1 . Plus la pression anthropique est forte, moins on rencontre les céphalophes.
+
+
+L'Objectif ici est de mesurer l'effet global de l'anthropisation sur les espèces de cephalophes.
+
+```{r Analyse_05, echo=FALSE}
+
+forglm <- glm(Nombre_total_cephalophes ~ pression_humaine_globale, family = poisson, data = dath1)
+summary(forglm)
+
+```
+A travers ces résultats, l'hypothèse H1 est vailde et significative. La pression humaine globale a un effet significatif (p = 2e-16 < 0.05) sur le nombre total de céphalophes, avec un effet négatif : lorsque la pression humaine augmente d'une unité, le nombre de céphalophes diminue de 35.57%.
+
+### H2 . L’effet de la pression humaine est modulé par les caractéristiques naturelles du territoire (relief, végétation, accessibilité aux ressources).
+
+
+L'Objectif ici est de mesurer les interactions entre variables naturelles et humaines.
+
+```{r Analyse_06, echo=FALSE, include=TRUE}
+
+sepglm <- glm(Nombre_total_cephalophes ~ gradiant_ecologique, family = poisson, data = dath1)
+summary(sepglm)
+
+```
+
+À travers ces résultats, l'hypothèse H2 est valide et significative. Le gradient écologique a un effet significatif (p = 0.00425 < 0.05) sur le nombre total de céphalophes, avec un effet négatif : lorsque le gradient écologique (Proximité eau, Pente, MODIS_Degradation) augmente d'une unité, le nombre de céphalophes diminue de 6.18%.
+
+Ce phénomène indique que certaines caractéristiques naturelles qui composent le gradient écologique influencent la façon dont la pression humaine impacte les céphalophes. L'effet négatif observé pourrait refléter une interaction entre ces deux facteurs, où un environnement plus riche (avec un gradient écologique plus élevé) pourrait être plus vulnérable à l'impact négatif de la pression humaine.
+
+
+### H3 . Les effets observés sont significativement variables d'un village à l'autre.
+
+
+
+```{r Analyse_07, echo=FALSE}
+
+trelmer <- lmer(Nombre_total_cephalophes ~ pression_humaine_globale + gradiant_ecologique + (1|Villages), data = dath1)
+summary(trelmer)
+
+```
+
+
+L'effet du gradient écologique est aussi positif, mais il n'est pas statistiquement significatif (valeur t = 0.535). Cela suggère que, bien que le gradient écologique puisse avoir un effet sur le nombre de céphalophes, cet effet n'est pas assez fort ou fiable pour être retenu dans ce modèle.
+
+Aucun des effets fixes (pression humaine et gradient écologique) n'est statistiquement significatif. Les villages semblent avoir un impact significatif sur le nombre de céphalophes, ce qui est représenté par la variance des effets aléatoires. Cela pourrait suggérer que, dans ce modèle spécifique, la pression humaine et le gradient écologique n'ont pas d'effet suffisamment fort ou direct sur le nombre de céphalophes, et que les différences entre villages sont plus importantes dans l'explication de la variabilité du nombre de céphalophes.
+
 
 

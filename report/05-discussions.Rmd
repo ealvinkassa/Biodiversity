@@ -1,3 +1,15 @@
 # Discussions
 
+Les résultats obtenus dans cette étude permettent de tirer des conclusions concernant les trois hypothèses formulées sur l'impact de la pression humaine, des caractéristiques naturelles du territoire, et des différences inter-villages sur le nombre de céphalophes.
 
+Hypothèse 1 : Plus la pression anthropique est forte, moins les céphalophes sont détectés, en fréquence et en abondance.
+
+Les résultats montrent une relation négative entre la pression humaine et le nombre de céphalophes, bien que cet effet ne soit pas significatif dans le modèle linéaire mixte. En d'autres termes, bien que la pression humaine semble avoir un impact négatif sur la population de céphalophes, cette relation n'est pas confirmée de manière statistiquement robuste. Cela pourrait indiquer que la pression humaine n'a pas l'effet anticipé sur la détection ou l'abondance des céphalophes, ou que d'autres facteurs non mesurés influencent ces résultats.
+
+Hypothèse 2 : L’effet de la pression humaine est modulé par les caractéristiques naturelles du site (relief, végétation, accessibilité aux ressources).
+
+L'hypothèse selon laquelle la pression humaine serait modulée par des caractéristiques naturelles du territoire n'est pas soutenue par les résultats. Les variables liées au gradient écologique et aux caractéristiques naturelles du territoire ne montrent pas d'effet significatif sur le nombre de céphalophes. Cela suggère que, dans cette analyse, les caractéristiques naturelles n'ont pas un rôle de modulation fort sur l'impact de la pression humaine. Il se pourrait que d'autres éléments contextuels ou des interactions complexes ne soient pas pris en compte dans le modèle.
+
+Hypothèse 3 : Les effets observés sont significativement variables d'un village à l'autre.
+
+Cette hypothèse est partiellement confirmée. L'effet aléatoire lié aux différences entre villages est statistiquement significatif, ce qui indique que le nombre de céphalophes varie effectivement de manière significative d'un village à l'autre. Cela suggère que des facteurs locaux spécifiques, tels que le relief, la végétation ou l'accessibilité aux ressources, influencent probablement la population de céphalophes de manière différente dans chaque village.

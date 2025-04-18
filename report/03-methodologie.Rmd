@@ -1,28 +1,31 @@
 # Méthodologie de l'étude
 
-(Ajouter ici une introduction de la section méthodologie)
+Voici étape par étape ce que nous avons essayé de faire, entre la réception du sujet d'étude et les conclusions que nous avons tirés.
+
+Données brutes → Préparation → Transformation → Modélisation → Résultats
 
 ## Données brutes mises à disposition
 
-Pour cette étude, nous avons reçu un fichier excel nommé **Data_Biodiversity.xlsx**. Ce dernier agrège en 4 feuilles, les données quantitatives et qualitatives mises à notre disposition dans le cadre d cet étude :
+Pour cette étude, nous avons reçu un fichier excel nommé Data_Biodiversity.xlsx. Ce dernier agrège en 4 feuilles, les données quantitatives et qualitatives mises à notre disposition dans le cadre d cet étude :
 
 -   data_espèces : nous y retrouvons, les détails concernant les différentes apparitions de céphalophes enrégistrées par les stations de collecte déployées sur les cinq villages ;
 -   data_stations : répertorie l'ensemble des installations de station sur le territoire. Cette feuille donne aussi, la nomenclature des noms des stations d'échantillonage, ainsi que des données importantes sur leur lieu d'implantation (relief, caractéristiques naturelles, distance aux routes, etc...)
--   table_information : dictionnaire de données de la base **Data_Biodiversity.xlsx**
+-   table_information : dictionnaire de données de la base Data_Biodiversity.xlsx
 -   autres_infos : s'y trouvent des informations importantes pour identifier les différentes espèces et la superficie des villages échantillonés.
 
-**Data_Biodiversity.xlsx** est propre, bien structuré, et ne contient pas de données manquantes au début de l'étude.
+Data_Biodiversity.xlsx est propre, bien structuré, et ne contient pas de données manquantes au début de l'étude.
 
 ## Préparation des données
 
 Nous avons commencé par explorer les librairies que nous pourrions utiliser dans le cadre de notre étude.
 
-```{r Packages, echo=FALSE, include=FALSE}
+```{r Packages_01, echo=FALSE, include=FALSE}
 
 # Vérifier si les packages sont installés
 required_packages <- c("carData", "factoextra", "lme4", "Matrix", 
                        "readxl", "openxlsx", "lubridate", "dplyr", 
-                       "stringr", "ggplot2", "tidyr", "car")
+                       "stringr", "ggplot2", "tidyr", "car", "tidyverse",
+                       "kableExtra")
 
 new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
 if(length(new_packages)) install.packages(new_packages)
@@ -36,7 +39,7 @@ source("C:/Users/HP/OneDrive - gouvbj/MVDC/Cours/Projects/Biodiversity/scripts/w
 
 Nous avons ensuite extrait les informations importantes de la base de données, en utilisant le package openxlsx. C'est celui qui offrait la meilleure flexibilité dans le choix des cellules à extraire de la base fournie.
 
-```{r Importer, echo=FALSE, include=FALSE}
+```{r Importer_02, echo=FALSE, include=FALSE}
 #1. data_especes récupère les informations de la feuille 1
 
 data_especes <- read.xlsx(
@@ -53,6 +56,11 @@ data_especes <- read.xlsx(
 #Apprécier le dataframe data_especes
 
 str(data_especes)
+
+```
+
+
+```{r Importer_04, echo=FALSE, include=FALSE}
 
 #2. data_stations récupère les données de la feuille 2
 
@@ -71,6 +79,10 @@ data_stations <- read.xlsx(
 
 str(data_stations)
 
+```
+
+```{r Importer_09, echo=FALSE, include=FALSE}
+
 #3. autres_infos récupère les données de la feuille 4
 
 autres_infos <- read.xlsx(
@@ -84,9 +96,14 @@ autres_infos <- read.xlsx(
   sep.names = "_",
   na.strings = "NA")
 
+
 #4. Extraire les espèces de cephalophes
 
 cephalophes <- autres_infos$Espèces
+
+```
+
+```{r Importer_10, echo=FALSE, include=FALSE}
 
 #5. geographie récupère dans la feuille 4, les données sur la superficie des villages étudiers
 
@@ -99,7 +116,8 @@ geographie <- read.xlsx(
   rowNames = FALSE,
   detectDates = TRUE,
   sep.names = "_",
-  na.strings = "NA")
+  na.strings = "NA")  %>%
+  rename(Superficie = `Taille_du_territoire_échantillonné_(km²)`)
 
 ```
 
@@ -107,12 +125,12 @@ geographie <- read.xlsx(
 
 Au fil de l'appréciation des données fournies, nous avons remarqué quelques anomalies que nous avons dû corriger. Les voici.
 
-### Transformer les valeurs de la colone **Heure_d'observation** du dataframe data_espèces au format HH MM SS
+### Transformer les valeurs de la colone Heure_d'observation du dataframe data_espèces au format HH MM SS
 
 De base dans le dataframe, cette variable est de type charactères (chr), au format 12:38. Pour mieux l'exploiter, nous avons transformer la variable en datetime en utilisant le package lubridate.
 
 
-```{r Transformer_etape_1, echo=FALSE, include=FALSE}
+```{r Transformer_03, echo=FALSE, include=FALSE}
 
 #a. Remplacer la valeur manquante par celle qui est correcte dans le dataset
 
@@ -132,10 +150,10 @@ str(data_especes)
 
 ### Corriger l'erreur de nomenclature au niveau du nom des stations
 
-Un premier essai de fusion des bases de données data_espèces et data_stations en une base de donnée globale, a fait apparaitre des valeurs manquantes.
+Un premier essai de fusion des bases de données data_espèces et data_stations en une base de donnée globale, a fait apparaitre 51 valeurs manquantes sur 07 variables.
 
 
-```{r Transformer_etape_2, echo=FALSE, include=FALSE}
+```{r Transformer_05, echo=FALSE, include=FALSE}
 
 all_data <- data_stations %>%
   select(-Villages, -Numero_de_la_station) %>%
@@ -144,19 +162,19 @@ all_data <- data_stations %>%
 
 #a. Apprécier le dataframe all_data
 
-str(all_data)
+summary(all_data)
 
 ```
 
 Dans la base crée, aucune données topographiques sur les stations du village de Molako n'était disponible. Une petite recherche a révélé une erreur de nomenclature dans le nomage des stations dans les deux bases de données :
 
-- dans la base data_espèce, les stations portent le nom **Molako01A** ;
-- dans la base data_stations, les stations portent le nom **MolakoA01**.
+- dans la base data_espèce, les stations portent le nom Molako01A ;
+- dans la base data_stations, les stations portent le nom MolakoA01.
 
-Cette différente de pattern est à l'origine des données manquantes observées. Pour résoudre le problème, nous avons utilisé la fonction **str_replace** du package **stringr**.
+Cette différente de pattern est à l'origine des données manquantes observées. Pour résoudre le problème, nous avons utilisé la fonction str_replace du package stringr.
 
 
-```{r Transformer_etape_3, echo=FALSE, include=FALSE}
+```{r Transformer_06, echo=FALSE, include=FALSE}
 
 #a. Corriger l'erreur au niveau du nom des stations.
 
@@ -165,6 +183,10 @@ data_stations <- data_stations %>%
     Numero_de_la_station = str_replace(Numero_de_la_station, "([A-Z])([0-9]{1,2})", "\\1\\2"),
     Stations_globales = str_replace(Stations_globales, "([A-Za-z]+)([A-Z])([0-9]+)", "\\1\\3\\2")
   )
+```
+
+
+```{r Transformer_11, echo=FALSE, include=FALSE}
 
 #b. Réaliser à nouveau la jointure entre data_stations et data_espèces
 
@@ -185,7 +207,7 @@ str(all_data)
 Nous avons créé cette variable pour apprécier le comportement des cephalophes suivant leur heures d'observation.
 
 
-```{r Transformer_etape_4, echo=FALSE, include=FALSE}
+```{r Transformer_12, echo=FALSE, include=FALSE}
 
 #d. Intégrer la variable moment de la journée
 
@@ -200,16 +222,16 @@ str(all_data)
 
 ```
 
-### Créer une variable composite de pression anthropique avec la méthode statistique ACP.
+## Modélisations statistiques
 
-Après avoir réalisé des régressions basées sur les distances qui ont été peu concluentes, nous avons opté pour la méthode d'analyse statistique en composantes principales (ACP).
+Nous avons créé à partir des données anthropiques, une variable composite de pression anthropique avec la méthode d'analyse statistique en composantes principales (ACP). Après avoir réalisé des régressions basées sur les distances qui ont été peu concluentes, nous avons opté pour cette méthode. En effet, c'est une méthode statistique très utile pour résumer plusieurs dimensions corrélées de la pression anthropique en un seul score synthétique, facilitant les modèles multivariés.
 
-Nous avons utilisé cette méthode pour créer deux set de variables composittes :
+Nous avons utilisé cette méthode pour créer deux catégories distinctes de variables composittes :
 
 - un score de pression anthropique, pour mesurer l'intensité de la pression anthropique à partir des distances des stations d'échantillonnage à l'activité humaine ;
 
 
-```{r Transformer_etape_5, echo=FALSE, include=FALSE}
+```{r Transformer_07, echo=FALSE, include=FALSE}
 
 #Etape 1 . Inverser les distances en proximité
 
@@ -266,7 +288,7 @@ data_stations <- cbind(
 - un score de pression environnementale, qui combine pression anthropique et facteurs environnementaux (pente, indice MODIS) ;
 
 
-```{r Transformer_etape_6, echo=FALSE, include=FALSE}
+```{r Transformer_08, echo=FALSE, include=FALSE}
 
 #Etape 1 . Standardiser les variables
 
@@ -308,11 +330,7 @@ data_stations <- cbind(
 
 ```
 
-En faisant cela, nous créons non pas une seule, mais plusieurs variables composites qui représentent, selon les distances de base qui les composent, des facettes différentes des effets anthropiques et naturelles. C'est également utile pour résumer plusieurs dimensions corrélées de la pression anthropique en un seul score synthétique, facilitant les modèles multivariés.
-
+En faisant cela, nous créons non pas une seule, mais plusieurs variables composites qui représentent, selon les distances de base qui les composent, des facettes différentes des effets anthropiques et naturelles. 
 
 Nous avons enfin, entammé la phase exploratoire des données, à la découverte du dispositif d'étude, du territoire du bassin du Congo et de sa faune.
-
-
-
 
